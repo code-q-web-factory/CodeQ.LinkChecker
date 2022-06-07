@@ -1,0 +1,8 @@
+# Various temporary and editor files
+.fuse_hidden
+.sass-cache
+bower_components
+node_modules
+*.DS_Store
+/.idea
+.remote-sync.json
