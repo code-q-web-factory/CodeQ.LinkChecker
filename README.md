@@ -37,7 +37,8 @@ CodeQ:
 Setup a cronjob e.g. daily to execute `./flow linkchecker:sync` 
 
 ## Limitations and possible future Features:
- - Use a job queue
+ - Support additional languages
+ - Use a job queue for crawling
  - Update the link checks after a page is published via a job queue
  - Check external links against malware oder security adviser lists
  - Find all occurrencies of external links to internal pages
