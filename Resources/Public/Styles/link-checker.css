@@ -1,0 +1,14 @@
+.codeq-link-checker-table .neos-button.neos-button--small {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+.codeq-link-checker-table .target-page-button {
+    padding-left: 0 !important;
+    max-width: 400px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.codeq-link-checker-table .neos-action {
+    width: 46px;
+}

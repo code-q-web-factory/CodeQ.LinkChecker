@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file original="" product-name="CodeQ.LinkChecker" source-language="en" datatype="plaintext">
+        <body>
+            <trans-unit id="module.label">
+                <source>Link Checker</source>
+            </trans-unit>
+            <trans-unit id="module.description">
+                <source>This module lists broken links.</source>
+            </trans-unit>
+
+            <trans-unit id="pagination.position">
+                <source>Showing {0}-{1} of {2}</source>
+            </trans-unit>
+
+            <trans-unit id="list.action.markAsDone">
+                <source>Mark as done</source>
+            </trans-unit>
+            <trans-unit id="list.action.ignore">
+                <source>Ignore this error</source>
+            </trans-unit>
+
+            <trans-unit id="domain">
+                <source>Domain</source>
+            </trans-unit>
+            <trans-unit id="source">
+                <source>Source</source>
+            </trans-unit>
+            <trans-unit id="targetUriPath">
+                <source>Target uri or path</source>
+            </trans-unit>
+            <trans-unit id="error">
+                <source>Error</source>
+            </trans-unit>
+            <trans-unit id="foundAt">
+                <source>Found at</source>
+            </trans-unit>
+
+            <trans-unit id="action.run">
+                <source>Start check again</source>
+            </trans-unit>
+
+            <trans-unit id="list.empty">
+                <source>There are currently no invalid links.</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

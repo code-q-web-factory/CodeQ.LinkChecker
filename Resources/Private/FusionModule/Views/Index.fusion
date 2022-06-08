@@ -1,0 +1,20 @@
+prototype(CodeQ.LinkChecker:Module.Index) < prototype(Neos.Fusion:Component) {
+    links = '[]'
+
+    runAction = Neos.Fusion:UriBuilder {
+        action = 'run'
+    }
+
+    renderer = afx`
+        <div class="neos-content neos-container-fluid">
+            <div class="neos-row-fluid">
+                <CodeQ.LinkChecker:Component.Links.List links={props.links}/>
+            </div>
+            <div class="neos-footer">
+                <a class="neos-button neos-button-primary" href={props.runAction}>
+                    {I18n.translate('CodeQ.LinkChecker:Modules:action.run')}
+                </a>
+            </div>
+        </div>
+    `
+}

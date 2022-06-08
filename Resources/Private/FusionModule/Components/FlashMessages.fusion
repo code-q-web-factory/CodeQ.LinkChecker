@@ -1,0 +1,25 @@
+prototype(CodeQ.LinkChecker:Component.FlashMessages) < prototype(Neos.Fusion:Component) {
+    flashMessages = ${[]}
+
+    renderer = afx`
+        <div class="neos-module-container">
+            <div id="neos-notifications-inline" @if.hasMessages={props.flashMessages}>
+                <Neos.Fusion:Loop items={props.flashMessages} itemName="message">
+                    <CodeQ.LinkChecker:Component.FlashMessages.Message message={message}/>
+                </Neos.Fusion:Loop>
+            </div>
+        </div>
+    `
+}
+
+prototype(CodeQ.LinkChecker:Component.FlashMessages.Message) < prototype(Neos.Fusion:Component) {
+    message = ${{}}
+
+    severity = ${String.toLowerCase(this.message.severity)}
+
+    renderer = afx`
+        <li data-type={props.severity}>
+            {props.message.message}
+        </li>
+    `
+}

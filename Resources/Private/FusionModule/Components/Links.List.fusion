@@ -1,0 +1,72 @@
+prototype(CodeQ.LinkChecker:Component.Links.List) < prototype(Neos.Fusion:Component) {
+    links = '[]'
+
+    renderer = afx`
+        <table class="neos-table codeq-link-checker-table">
+            <thead>
+            <tr>
+                <th>{I18n.translate('CodeQ.LinkChecker:Modules:domain')}</th>
+                <th>
+                    {I18n.translate('CodeQ.LinkChecker:Modules:source')} <i class="fas fa-sort-amount-down"></i>
+                </th>
+                <th>{I18n.translate('CodeQ.LinkChecker:Modules:targetUriPath')}</th>
+                <th>{I18n.translate('CodeQ.LinkChecker:Modules:error')}</th>
+                <th>{I18n.translate('CodeQ.LinkChecker:Modules:foundAt')}</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <Neos.Fusion:Loop items={props.links} itemName="link">
+                <CodeQ.LinkChecker:Component.Links.List.Link link={link}/>
+            </Neos.Fusion:Loop>
+            </tbody>
+        </table>
+    `
+}
+
+prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:Component) {
+    link = '{}'
+
+    markAsDoneAction = Neos.Fusion:UriBuilder {
+        action = 'markAsDone'
+    }
+    ignoreAction = Neos.Fusion:UriBuilder {
+        action = 'ignore'
+    }
+
+    renderer = afx`
+        <tr>
+            <td>{link.domain}</td>
+            <td>
+                {link.source}
+                <a href="#" target="_blank" class="neos-button neos-button--small">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href={link.source} target="_blank" class="neos-button neos-button--small">
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+            </td>
+            <td>
+                <a href={link.target} target="_blank" class="neos-button target-page-button">{link.target} <i class="fas fa-external-link-alt"></i></a>
+            </td>
+            <td>{link.error}</td>
+            <td>{Date.format(link.foundAt, 'd.m.Y H:i')}</td>
+            <td class="neos-action">
+                <div class="neos-pull-right">
+                    <a class="neos-button"
+                        href={props.markAsDoneAction}
+                        title={I18n.translate('CodeQ.LinkChecker:Modules:list.action.markAsDone')}
+                    >
+                        <i class="fas fa-check"></i>
+                    </a>
+                    <a class="neos-button"
+                        href={props.ignoreAction}
+                        title={I18n.translate('CodeQ.LinkChecker:Modules:list.action.ignore')}
+                    >
+                        <i class="fas fa-eye-slash"></i>
+                    </a>
+                </div>
+            </td>
+        </tr>
+    `
+}

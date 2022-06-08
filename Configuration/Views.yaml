@@ -1,0 +1,7 @@
+-
+  requestFilter: 'isPackage("CodeQ.LinkChecker") && isController("Module") && isFormat("html")'
+  viewObjectName: 'Neos\Fusion\View\FusionView'
+  options:
+    fusionPathPatterns:
+      - 'resource://Neos.Fusion/Private/Fusion'
+      - 'resource://CodeQ.LinkChecker/Private/FusionModule'
