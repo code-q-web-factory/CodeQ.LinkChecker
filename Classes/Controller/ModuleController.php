@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace CodeQ\LinkChecker\Controller;
 
+use CodeQ\LinkChecker\Domain\Model\ResultItem;
+use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Mvc\Exception\StopActionException;
+use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
 use Neos\Fusion\View\FusionView;
 use Neos\Neos\Controller\Module\AbstractModuleController;
 
@@ -23,50 +27,54 @@ class ModuleController extends AbstractModuleController
      */
     protected $defaultViewObjectName = FusionView::class;
 
+    /**
+     * @Flow\Inject
+     *
+     * @var ResultItemStorage
+     */
+    protected $resultItemStorage;
+
     public function indexAction(): void
     {
-        $links = [
-            [
-                'uuid' => '332c1ba3-d97b-407c-9e21-32a178d6d2e6',
-                'domain' => 'meine-neos-webseite.at',
-                'source' => '/unterseite',
-                'target' => 'https://invalid-url.com/',
-                'error' => 'Not found (404)',
-                'foundAt' => new \DateTimeImmutable('07-06-2022 14:35'),
-            ],
-            [
-                'uuid' => '332c1ba3-d97b-407c-9e21-32a178d6d2e7',
-                'domain' => 'meine-neos-webseite.at',
-                'source' => '/unterseite',
-                'target' => 'https://broken-url.com/',
-                'error' => 'Internal Server Error (500)',
-                'foundAt' => new \DateTimeImmutable('08-06-2022 15:11'),
-            ],
-        ];
-
+        $resultItems = $this->resultItemStorage->findAll();
         $flashMessages = $this->controllerContext->getFlashMessageContainer()->getMessagesAndFlush();
 
         $this->view->assignMultiple([
-            'links' => $links,
+            'links' => $resultItems,
             'flashMessages' => $flashMessages,
         ]);
     }
 
+    /**
+     * @throws StopActionException
+     */
     public function runAction(): void
     {
         $this->addFlashMessage('Hello from run action!');
         $this->redirect('index');
     }
 
-    public function markAsDoneAction(): void
+    /**
+     * @throws IllegalObjectTypeException
+     * @throws StopActionException
+     */
+    public function markAsDoneAction(ResultItem $resultItem): void
     {
-        $this->addFlashMessage('Hello from markAsDone action!');
+        $this->resultItemStorage->markAsDone($resultItem);
+
+        $this->addFlashMessage(sprintf('%s marked as done', $resultItem->getSource()));
         $this->redirect('index');
     }
 
-    public function ignoreAction(): void
+    /**
+     * @throws IllegalObjectTypeException
+     * @throws StopActionException
+     */
+    public function ignoreAction(ResultItem $resultItem): void
     {
-        $this->addFlashMessage('Hello from ignore action!');
+        $this->resultItemStorage->ignore($resultItem);
+
+        $this->addFlashMessage(sprintf('%s ignored', $resultItem->getSource()));
         $this->redirect('index');
     }
 }

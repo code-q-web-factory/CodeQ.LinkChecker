@@ -6,9 +6,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List) < prototype(Neos.Fusion:Compon
             <thead>
             <tr>
                 <th>{I18n.translate('CodeQ.LinkChecker:Modules:domain')}</th>
-                <th>
-                    {I18n.translate('CodeQ.LinkChecker:Modules:source')} <i class="fas fa-sort-amount-down"></i>
-                </th>
+                <th>{I18n.translate('CodeQ.LinkChecker:Modules:source')} <i class="fas fa-sort-amount-down"></i></th>
                 <th>{I18n.translate('CodeQ.LinkChecker:Modules:targetUriPath')}</th>
                 <th>{I18n.translate('CodeQ.LinkChecker:Modules:error')}</th>
                 <th>{I18n.translate('CodeQ.LinkChecker:Modules:foundAt')}</th>
@@ -27,13 +25,6 @@ prototype(CodeQ.LinkChecker:Component.Links.List) < prototype(Neos.Fusion:Compon
 prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:Component) {
     link = '{}'
 
-    markAsDoneAction = Neos.Fusion:UriBuilder {
-        action = 'markAsDone'
-    }
-    ignoreAction = Neos.Fusion:UriBuilder {
-        action = 'ignore'
-    }
-
     renderer = afx`
         <tr>
             <td>{link.domain}</td>
@@ -49,22 +40,25 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
             <td>
                 <a href={link.target} target="_blank" class="neos-button target-page-button">{link.target} <i class="fas fa-external-link-alt"></i></a>
             </td>
-            <td>{link.error}</td>
-            <td>{Date.format(link.foundAt, 'd.m.Y H:i')}</td>
+            <td>{link.statusCode}</td>
+            <td>{Date.format(link.checkedAt, 'd.m.Y H:i')}</td>
             <td class="neos-action">
                 <div class="neos-pull-right">
-                    <a class="neos-button"
-                        href={props.markAsDoneAction}
-                        title={I18n.translate('CodeQ.LinkChecker:Modules:list.action.markAsDone')}
-                    >
-                        <i class="fas fa-check"></i>
-                    </a>
-                    <a class="neos-button"
-                        href={props.ignoreAction}
-                        title={I18n.translate('CodeQ.LinkChecker:Modules:list.action.ignore')}
-                    >
-                        <i class="fas fa-eye-slash"></i>
-                    </a>
+                    <Neos.Fusion.Form:Form form.target.action="markAsDone" form.target.arguments.resultItem={link} attributes.class="neos-inline">
+                        <Neos.Fusion.Form:Button
+                            attributes.title={I18n.translate('CodeQ.LinkChecker:Modules:list.action.markAsDone')}
+                        >
+                            <i class="fas fa-check"></i>
+                        </Neos.Fusion.Form:Button>
+                    </Neos.Fusion.Form:Form>
+
+                    <Neos.Fusion.Form:Form form.target.action="ignore" form.target.arguments.resultItem={link} attributes.class="neos-inline">
+                        <Neos.Fusion.Form:Button
+                            attributes.title={I18n.translate('CodeQ.LinkChecker:Modules:list.action.ignore')}
+                        >
+                            <i class="fas fa-eye-slash"></i>
+                        </Neos.Fusion.Form:Button>
+                    </Neos.Fusion.Form:Form>
                 </div>
             </td>
         </tr>
