@@ -25,6 +25,10 @@ prototype(CodeQ.LinkChecker:Component.Links.List) < prototype(Neos.Fusion:Compon
 prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:Component) {
     link = '{}'
 
+    // TODO: link to content module to edit the node
+
+    // TODO: create target link only if protocol is http/https but not for nodes
+
     renderer = afx`
         <tr>
             <td>{link.domain}</td>

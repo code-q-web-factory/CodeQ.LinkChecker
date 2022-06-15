@@ -4,7 +4,8 @@
     "type": "neos-package",
     "license": "GPL-3.0-or-later",
     "require": {
-        "neos/neos": "^4.3 || 5 - 8 || dev-master"
+        "neos/neos": "^4.3 || 5 - 8 || dev-master",
+        "symfony/polyfill-php80": "^1.16"
     },
     "autoload": {
         "psr-4": {

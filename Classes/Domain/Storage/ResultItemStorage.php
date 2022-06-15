@@ -43,4 +43,23 @@ class ResultItemStorage
 
         $this->resultItemRepository->update($resultItem);
     }
+
+    /**
+     * @throws IllegalObjectTypeException
+     */
+    public function add(ResultItem $resultItem): void
+    {
+        $existingResultItem = $this->resultItemRepository->findOneByData([
+            'domain' => $resultItem->getDomain(),
+            'source' => $resultItem->getSource(),
+            'target' => $resultItem->getTarget(),
+            'statusCode' => $resultItem->getStatusCode(),
+        ]);
+
+        if ($existingResultItem instanceof ResultItem) {
+            return;
+        }
+
+        $this->resultItemRepository->add($resultItem);
+    }
 }

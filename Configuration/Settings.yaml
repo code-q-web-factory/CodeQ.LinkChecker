@@ -1,3 +1,15 @@
+CodeQ:
+  LinkChecker:
+    # how many concurrent requests should the command controller perform
+    # If set too high, you most DOS your server
+    concurrency: 10
+
+    urlsToCrawl:
+      - https://neos.io
+      - https://codeq.at
+      - https://example.org
+      - https://example.org/a-nowhere-linked-page-to-also-check
+
 Neos:
   Neos:
     userInterface:

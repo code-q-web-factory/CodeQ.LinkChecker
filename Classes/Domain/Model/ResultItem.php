@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CodeQ\LinkChecker\Domain\Model;
 
-use DateTime;
+use DateTimeInterface;
 use Neos\Flow\Annotations as Flow;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -46,14 +46,14 @@ class ResultItem
     protected bool $ignore = false;
 
     /**
-     * @var DateTime
+     * @var DateTimeInterface
      */
-    protected DateTime $createdAt;
+    protected DateTimeInterface $createdAt;
 
     /**
-     * @var DateTime
+     * @var DateTimeInterface
      */
-    protected DateTime $checkedAt;
+    protected DateTimeInterface $checkedAt;
 
     /**
      * @return string
@@ -158,35 +158,35 @@ class ResultItem
     }
 
     /**
-     * @return DateTime
+     * @return DateTimeInterface
      */
-    public function getCreatedAt(): DateTime
+    public function getCreatedAt(): DateTimeInterface
     {
         return $this->createdAt;
     }
 
     /**
-     * @param DateTime $createdAt
+     * @param DateTimeInterface $createdAt
      * @return void
      */
-    public function setCreatedAt(DateTime $createdAt): void
+    public function setCreatedAt(DateTimeInterface $createdAt): void
     {
         $this->createdAt = $createdAt;
     }
 
     /**
-     * @return DateTime
+     * @return DateTimeInterface
      */
-    public function getCheckedAt(): DateTime
+    public function getCheckedAt(): DateTimeInterface
     {
         return $this->checkedAt;
     }
 
     /**
-     * @param DateTime $checkedAt
+     * @param DateTimeInterface $checkedAt
      * @return void
      */
-    public function setCheckedAt(DateTime $checkedAt): void
+    public function setCheckedAt(DateTimeInterface $checkedAt): void
     {
         $this->checkedAt = $checkedAt;
     }
