@@ -39,6 +39,10 @@ class ModuleController extends AbstractModuleController
         $resultItems = $this->resultItemStorage->findAll();
         $flashMessages = $this->controllerContext->getFlashMessageContainer()->getMessagesAndFlush();
 
+        // This is necessary in order to link to the content module
+        // otherwise all links will be to the same backend module
+        $this->uriBuilder->setRequest($this->request->getMainRequest());
+
         $this->view->assignMultiple([
             'links' => $resultItems,
             'flashMessages' => $flashMessages,
@@ -58,11 +62,11 @@ class ModuleController extends AbstractModuleController
      * @throws IllegalObjectTypeException
      * @throws StopActionException
      */
-    public function markAsDoneAction(ResultItem $resultItem): void
+    public function deleteAction(ResultItem $resultItem): void
     {
-        $this->resultItemStorage->markAsDone($resultItem);
+        $this->resultItemStorage->remove($resultItem);
 
-        $this->addFlashMessage(sprintf('%s marked as done', $resultItem->getSource()));
+        $this->addFlashMessage(sprintf('%s deleted', $resultItem->getSource()));
         $this->redirect('index');
     }
 

@@ -4,31 +4,21 @@ declare(strict_types=1);
 
 namespace CodeQ\LinkChecker\Command;
 
-use CodeQ\LinkChecker\Domain\Model\ResultItem;
-use CodeQ\LinkChecker\Domain\Storage\NodeDataStorage;
-use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
-use Neos\ContentRepository\Domain\Factory\NodeFactory;
-use Neos\ContentRepository\Domain\Model\NodeData;
+use CodeQ\LinkChecker\Domain\Crawler\ContentNodeCrawler;
+use CodeQ\LinkChecker\Domain\Service\DomainService;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\ContentRepository\Exception\NodeConfigurationException;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\CommandController;
-use Neos\Flow\Http\ServerRequestAttributes;
-use Neos\Flow\Mvc\ActionRequestFactory;
-use Neos\Flow\Mvc\ActionResponse;
-use Neos\Flow\Mvc\Controller\Arguments;
-use Neos\Flow\Mvc\Controller\ControllerContext;
 use Neos\Flow\Mvc\Exception\InvalidActionNameException;
 use Neos\Flow\Mvc\Exception\InvalidArgumentNameException;
 use Neos\Flow\Mvc\Exception\InvalidArgumentTypeException;
 use Neos\Flow\Mvc\Exception\InvalidControllerNameException;
-use Neos\Flow\Mvc\Routing\Dto\RouteParameters;
 use Neos\Flow\Mvc\Routing\Exception\MissingActionNameException;
-use Neos\Flow\Mvc\Routing\UriBuilder;
 use Neos\Flow\ObjectManagement\Exception\UnresolvedDependenciesException;
 use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
-use Neos\Neos\Service\LinkingService;
-use Psr\Http\Message\ServerRequestFactoryInterface;
+use Neos\Flow\Persistence\Exception\InvalidQueryException;
+use Neos\Neos\Domain\Model\Domain;
 
 /**
  * @Flow\Scope("singleton")
@@ -38,22 +28,9 @@ class CheckLinksCommandController extends CommandController
 {
     /**
      * @Flow\Inject
-     *
-     * @var ResultItemStorage
+     * @var DomainService
      */
-    protected $resultItemStorage;
-
-    /**
-     * @Flow\Inject
-     * @var NodeDataStorage
-     */
-    protected $nodeDataStorage;
-
-    /**
-     * @Flow\Inject
-     * @var LinkingService
-     */
-    protected $linkingService;
+    protected $domainService;
 
     /**
      * @Flow\Inject
@@ -63,21 +40,9 @@ class CheckLinksCommandController extends CommandController
 
     /**
      * @Flow\Inject
-     * @var NodeFactory
+     * @var ContentNodeCrawler
      */
-    protected $nodeFactory;
-
-    /**
-     * @Flow\Inject
-     * @var ServerRequestFactoryInterface
-     */
-    protected $serverRequestFactory;
-
-    /**
-     * @Flow\Inject
-     * @var ActionRequestFactory
-     */
-    protected $actionRequestFactory;
+    protected $contentNodeCrawler;
 
     protected array $settings;
 
@@ -100,6 +65,7 @@ class CheckLinksCommandController extends CommandController
      * @param string $url The url to start crawling from
      * @param int $concurrency Maximum number of requests to send concurrently
      * @return void
+     * @throws IllegalObjectTypeException
      * @throws InvalidActionNameException
      * @throws InvalidArgumentNameException
      * @throws InvalidArgumentTypeException
@@ -107,118 +73,49 @@ class CheckLinksCommandController extends CommandController
      * @throws MissingActionNameException
      * @throws NodeConfigurationException
      * @throws UnresolvedDependenciesException
-     * @throws IllegalObjectTypeException
+     * @throws \Neos\Eel\Exception
+     * @throws InvalidQueryException
      * @throws \Neos\Flow\Property\Exception
      * @throws \Neos\Flow\Security\Exception
      * @throws \Neos\Neos\Exception
-     * @see \Neos\Neos\Fusion\ConvertUrisImplementation::evaluate
      */
     public function crawlCommand(string $url = '', int $concurrency = 10): void
     {
-        $context = $this->contextFactory->create();
+        /** @var non-empty-string[] $urlsToCrawl */
+        $urlsToCrawl = $this->settings['urlsToCrawl'];
 
-        $linkingService = $this->linkingService;
+        $domainsToCrawl = $this->domainService->getDomainsToCrawl($urlsToCrawl);
 
-        $iterableResult = $this->nodeDataStorage->findAll();
-
-        foreach ($iterableResult as $result) {
-            /** @var NodeData $nodeData */
-            $nodeData = $result[0];
-
-            $unresolvedUris = [];
-            $node = $this->nodeFactory->createFromNodeData($nodeData, $context);
-            $controllerContext = $this->createControllerContextFromEnvironment('playground-7.codeq.test'); // TODO: load this from settings
-
-            $properties = $nodeData->getProperties();
-
-            foreach ($properties as $property) {
-                if (!is_string($property)) {
-                    continue;
-                }
-
-                if (!str_contains($property, 'node://')) {
-                    continue;
-                }
-
-                $absolute = true;
-
-                $processedContent = preg_replace_callback(
-                    LinkingService::PATTERN_SUPPORTED_URIS,
-                    static function (array $matches) use (
-                        $node,
-                        $linkingService,
-                        $controllerContext,
-                        &$unresolvedUris,
-                        $absolute
-                    ) {
-                        switch ($matches[1]) {
-                            case 'node':
-                                $resolvedUri = $linkingService->resolveNodeUri(
-                                    $matches[0],
-                                    $node,
-                                    $controllerContext,
-                                    $absolute
-                                );
-                                break;
-                            default:
-                                $resolvedUri = null;
-                        }
-
-                        if ($resolvedUri === null) {
-                            $unresolvedUris[] = $matches[0];
-                            return $matches[0];
-                        }
-
-                        return $resolvedUri;
-                    },
-                    $property
-                );
-            }
-
-            foreach ($unresolvedUris as $uri) {
-                $this->outputLine('ERROR: ' . $uri);
-
-                $resultItem = new ResultItem();
-                $resultItem->setDomain('playground-7.codeq.test'); // TODO: load this from settings
-                $resultItem->setSource($nodeData->getPath());
-                $resultItem->setTarget($uri);
-                $resultItem->setStatusCode(404);
-                $resultItem->setCreatedAt(new \DateTime());
-                $resultItem->setCheckedAt(new \DateTime());
-
-                $this->resultItemStorage->add($resultItem);
-            }
+        foreach ($domainsToCrawl as $domainToCrawl) {
+            $this->crawlDomain($domainToCrawl);
         }
     }
 
     /**
+     * @throws IllegalObjectTypeException
      * @throws InvalidActionNameException
      * @throws InvalidArgumentNameException
      * @throws InvalidArgumentTypeException
      * @throws InvalidControllerNameException
+     * @throws MissingActionNameException
+     * @throws NodeConfigurationException
      * @throws UnresolvedDependenciesException
-     * @see https://github.com/neos/flow-development-collection/issues/2084#issuecomment-696567359
+     * @throws \Neos\Eel\Exception
+     * @throws \Neos\Flow\Property\Exception
+     * @throws \Neos\Flow\Security\Exception
+     * @throws \Neos\Neos\Exception
      */
-    protected function createControllerContextFromEnvironment(string $requestUriHost): ControllerContext
+    protected function crawlDomain(Domain $domain): void
     {
-        $_SERVER['FLOW_REWRITEURLS'] = 1;
+        $context = $this->contextFactory->create([
+            'currentSite' => $domain->getSite(),
+            'currentDomain' => $domain,
+        ]);
 
-        $routeParameters = RouteParameters::createEmpty()
-            ->withParameter('requestUriHost', $requestUriHost);
+        $messages = $this->contentNodeCrawler->crawl($context, $domain);
 
-        $fakeHttpRequest = $this->serverRequestFactory->createServerRequest('GET', 'http://' . $requestUriHost)
-            ->withAttribute(ServerRequestAttributes::ROUTING_PARAMETERS, $routeParameters);
-
-        $fakeActionRequest = $this->actionRequestFactory->createActionRequest($fakeHttpRequest);
-
-        $uriBuilder = new UriBuilder();
-        $uriBuilder->setRequest($fakeActionRequest);
-
-        return new ControllerContext(
-            $fakeActionRequest,
-            new ActionResponse(),
-            new Arguments([]),
-            $uriBuilder
-        );
+        foreach ($messages as $message) {
+            $this->output->outputFormatted('<error>' . $message . '</error>');
+        }
     }
 }

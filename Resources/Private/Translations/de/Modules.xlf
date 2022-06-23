@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file original="" product-name="CodeQ.LinkChecker" source-language="de" datatype="plaintext">
+        <body>
+            <trans-unit id="module.label">
+                <source>Link Überprüfung</source>
+            </trans-unit>
+            <trans-unit id="module.description">
+                <source>Dieses Module listet fehlerhafte Links auf.</source>
+            </trans-unit>
+
+            <trans-unit id="pagination.position">
+                <source>Zeige {0}-{1} von {2}</source>
+            </trans-unit>
+
+            <trans-unit id="list.action.delete">
+                <source>Als erledigt markieren</source>
+            </trans-unit>
+            <trans-unit id="list.action.ignore">
+                <source>Fehler ignorieren</source>
+            </trans-unit>
+
+            <trans-unit id="domain">
+                <source>Ursprungsdomäne</source>
+            </trans-unit>
+            <trans-unit id="source">
+                <source>Quellpfad</source>
+            </trans-unit>
+            <trans-unit id="targetUriPath">
+                <source>Ziel-Url oder Pfad</source>
+            </trans-unit>
+            <trans-unit id="error">
+                <source>Fehler</source>
+            </trans-unit>
+            <trans-unit id="error.404">
+                <source>Nicht gefunden (404)</source>
+            </trans-unit>
+            <trans-unit id="error.403">
+                <source>Zugriff verboten (403)</source>
+            </trans-unit>
+            <trans-unit id="error.500">
+                <source>Interner Fehler (500)</source>
+            </trans-unit>
+            <trans-unit id="foundAt">
+                <source>Gefunden am</source>
+            </trans-unit>
+
+            <trans-unit id="action.run">
+                <source>Neue Überprüfung ausführen</source>
+            </trans-unit>
+
+            <trans-unit id="list.empty">
+                <source>Es gibt keine fehlerhaften Links.</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

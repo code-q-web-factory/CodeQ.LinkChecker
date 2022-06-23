@@ -27,11 +27,9 @@ class ResultItemStorage
     /**
      * @throws IllegalObjectTypeException
      */
-    public function markAsDone(ResultItem $resultItem): void
+    public function remove(ResultItem $resultItem): void
     {
-        $resultItem->setDone(true);
-
-        $this->resultItemRepository->update($resultItem);
+        $this->resultItemRepository->remove($resultItem);
     }
 
     /**

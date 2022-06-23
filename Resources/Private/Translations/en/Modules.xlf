@@ -13,8 +13,8 @@
                 <source>Showing {0}-{1} of {2}</source>
             </trans-unit>
 
-            <trans-unit id="list.action.markAsDone">
-                <source>Mark as done</source>
+            <trans-unit id="list.action.delete">
+                <source>Delete</source>
             </trans-unit>
             <trans-unit id="list.action.ignore">
                 <source>Ignore this error</source>

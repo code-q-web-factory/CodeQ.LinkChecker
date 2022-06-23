@@ -19,7 +19,7 @@ class ResultItem
     protected string $domain;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected string $source;
 
@@ -73,9 +73,9 @@ class ResultItem
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getSource(): string
+    public function getSource(): ?string
     {
         return $this->source;
     }
@@ -84,7 +84,7 @@ class ResultItem
      * @param string $source
      * @return void
      */
-    public function setSource(string $source): void
+    public function setSource(?string $source = null): void
     {
         $this->source = $source;
     }

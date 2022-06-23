@@ -22,7 +22,23 @@ final class Version20220613120152 extends AbstractMigration
             "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MySQL80Platform'."
         );
 
-        $this->addSql('CREATE TABLE codeq_linkchecker_domain_model_resultitem (persistence_object_identifier VARCHAR(40) NOT NULL, domain VARCHAR(255) NOT NULL, source VARCHAR(255) NOT NULL, target VARCHAR(255) NOT NULL, statuscode INT NOT NULL, done TINYINT(1) NOT NULL, `ignore` TINYINT(1) NOT NULL, createdat DATETIME NOT NULL, checkedat DATETIME NOT NULL, PRIMARY KEY(persistence_object_identifier)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql(<<<SQL
+    CREATE TABLE codeq_linkchecker_domain_model_resultitem (
+        persistence_object_identifier VARCHAR(40) NOT NULL,
+        domain VARCHAR(255) NOT NULL,
+        source VARCHAR(2000) NULL,
+        target VARCHAR(2000) NOT NULL,
+        statuscode INT NOT NULL,
+        `ignore` TINYINT(1) NOT NULL,
+        createdat DATETIME NOT NULL,
+        checkedat DATETIME NOT NULL,
+        PRIMARY KEY(persistence_object_identifier)
+    )
+    DEFAULT CHARACTER SET utf8mb4
+    COLLATE `utf8mb4_unicode_ci`
+    ENGINE = InnoDB
+SQL
+        );
     }
 
     public function down(Schema $schema): void
