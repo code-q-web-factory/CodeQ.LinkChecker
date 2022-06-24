@@ -2,18 +2,7 @@ prototype(CodeQ.LinkChecker:Backend.Module.Index) < prototype(Neos.Fusion:Compon
     links = '[]'
 
     runAction = Neos.Fusion:UriBuilder {
-        package = 'Neos.Neos'
-        controller = 'Backend\\Module'
-        action = 'index'
-
-        arguments = Neos.Fusion:DataStructure {
-            module = 'management/link-checker'
-            moduleArguments {
-                '@package' = 'CodeQ.LinkChecker'
-                '@controller' = 'Backend\\Module'
-                '@action' = 'run'
-            }
-        }
+        action = 'run'
     }
 
     renderer = afx`

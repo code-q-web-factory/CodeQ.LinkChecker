@@ -25,11 +25,10 @@ prototype(CodeQ.LinkChecker:Component.Links.List) < prototype(Neos.Fusion:Compon
 prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:Component) {
     link = '{}'
 
-    linkToEditNode = Neos.Fusion:UriBuilder {
+    linkToEditNode = Sitegeist.FusionLinkPrototypes:ActionUri {
         package = 'Neos.Neos.Ui'
         controller = 'Backend'
         action = 'index'
-        // Please replace with the correct path to node
         arguments.node = ${link.source}
     }
 
@@ -63,36 +62,12 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
     }
 
     deleteUri = Neos.Fusion:UriBuilder {
-        package = 'Neos.Neos'
-        controller = 'Backend\\Module'
-        action = 'index'
-
-        arguments = Neos.Fusion:DataStructure {
-            module = 'management/link-checker'
-            moduleArguments {
-                '@package' = 'CodeQ.LinkChecker'
-                '@controller' = 'Backend\\Module'
-                '@action' = 'delete'
-                '@format' = 'html'
-                resultItem = ${link}
-            }
-        }
+        action = 'delete'
+        arguments.resultItem = ${link}
     }
     ignoreUri = Neos.Fusion:UriBuilder {
-        package = 'Neos.Neos'
-        controller = 'Backend\\Module'
-        action = 'index'
-
-        arguments = Neos.Fusion:DataStructure {
-            module = 'management/link-checker'
-            moduleArguments {
-                '@package' = 'CodeQ.LinkChecker'
-                '@controller' = 'Backend\\Module'
-                '@action' = 'ignore'
-                '@format' = 'html'
-                resultItem = ${link}
-            }
-        }
+        action = 'ignore'
+        arguments.resultItem = ${link}
     }
 
     renderer = afx`

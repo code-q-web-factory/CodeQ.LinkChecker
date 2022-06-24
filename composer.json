@@ -5,6 +5,7 @@
     "license": "GPL-3.0-or-later",
     "require": {
         "neos/neos": "^4.3 || 5 - 8 || dev-master",
+        "sitegeist/fusionlinkprototypes": "^1.0",
         "symfony/polyfill-php80": "^1.16"
     },
     "autoload": {

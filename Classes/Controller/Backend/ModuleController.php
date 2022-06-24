@@ -77,10 +77,6 @@ class ModuleController extends AbstractModuleController
         $resultItems = $this->resultItemStorage->findAll();
         $flashMessages = $this->controllerContext->getFlashMessageContainer()->getMessagesAndFlush();
 
-        // This is necessary in order to link to the content module
-        // otherwise all links will be to the same backend module
-        $this->uriBuilder->setRequest($this->request->getMainRequest());
-
         $this->view->assignMultiple([
             'links' => $resultItems,
             'flashMessages' => $flashMessages,
