@@ -1,6 +1,6 @@
-CodeQ.LinkChecker.ModuleController {
+CodeQ.LinkChecker.Backend.ModuleController {
     index = afx`
         <CodeQ.LinkChecker:Component.FlashMessages flashMessages={flashMessages}/>
-        <CodeQ.LinkChecker:Module.Index links={links}/>
+        <CodeQ.LinkChecker:Backend.Module.Index links={links}/>
     `
 }

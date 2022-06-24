@@ -71,7 +71,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
             module = 'management/link-checker'
             moduleArguments {
                 '@package' = 'CodeQ.LinkChecker'
-                '@controller' = 'Module'
+                '@controller' = 'Backend\\Module'
                 '@action' = 'delete'
                 '@format' = 'html'
                 resultItem = ${link}
@@ -87,7 +87,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
             module = 'management/link-checker'
             moduleArguments {
                 '@package' = 'CodeQ.LinkChecker'
-                '@controller' = 'Module'
+                '@controller' = 'Backend\\Module'
                 '@action' = 'ignore'
                 '@format' = 'html'
                 resultItem = ${link}

@@ -23,9 +23,9 @@ Neos:
             label: 'CodeQ.LinkChecker:Modules:module.label'
             description: 'CodeQ.LinkChecker:Modules:module.description'
             icon: 'fas fa-link'
-            controller: '\CodeQ\LinkChecker\Controller\ModuleController'
+            controller: \CodeQ\LinkChecker\Controller\Backend\ModuleController
             resource: 'CodeQ.LinkChecker:Backend.Module'
-            privilegeTarget: 'CodeQ.LinkChecker:Module'
+            privilegeTarget: 'CodeQ.LinkChecker:Backend.Module'
             additionalResources:
               styleSheets:
                 - 'resource://CodeQ.LinkChecker/Public/Styles/link-checker.css'

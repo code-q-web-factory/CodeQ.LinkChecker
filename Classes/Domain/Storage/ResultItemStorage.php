@@ -6,6 +6,7 @@ namespace CodeQ\LinkChecker\Domain\Storage;
 
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Repository\ResultItemRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
 use Neos\Flow\Persistence\QueryResultInterface;
@@ -19,6 +20,14 @@ class ResultItemStorage
      */
     protected $resultItemRepository;
 
+    /**
+     * Doctrine's Entity Manager.
+     *
+     * @Flow\Inject
+     * @var EntityManagerInterface
+     */
+    protected $entityManager;
+
     public function findAll(): QueryResultInterface
     {
         return $this->resultItemRepository->findAll();
@@ -30,6 +39,15 @@ class ResultItemStorage
     public function remove(ResultItem $resultItem): void
     {
         $this->resultItemRepository->remove($resultItem);
+    }
+
+    public function truncate(): void
+    {
+        $qB = $this->entityManager->createQueryBuilder()
+            ->delete(ResultItem::class);
+
+        $query = $qB->getQuery();
+        $query->execute();
     }
 
     /**
