@@ -25,7 +25,7 @@ Configure the link checker sync in your settings, like this:
 CodeQ:
   LinkChecker:
     # how many concurrent requests should the command controller perform
-    # If set too high, you most DOS your server
+    # If set too high, you will DDoS your server
     concurrency: 10
   pagesToCrawl:
     - https://neos.io
