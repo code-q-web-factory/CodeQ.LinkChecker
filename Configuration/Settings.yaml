@@ -14,10 +14,10 @@ CodeQ:
       auth: []
 
     notifications:
-      enabled: false
+      enabled: true
       service: 'CodeQ\LinkChecker\Service\EmailService'
       subject: 'Link checker results'
-      minimumStatusCode: 400
+      minimumStatusCode: 300
       mail:
         sender:
           default:
@@ -36,6 +36,8 @@ CodeQ:
             - 'Status code'
             - 'URL'
             - 'Origin URL'
+            - 'Domain'
+            - 'Checked at'
         logging:
           errors: log
           success: log

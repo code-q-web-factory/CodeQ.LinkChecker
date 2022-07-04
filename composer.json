@@ -4,6 +4,7 @@
     "type": "neos-package",
     "license": "GPL-3.0-or-later",
     "require": {
+        "league/csv": "^9.1",
         "neos/neos": "^4.3 || 5 - 8 || dev-master",
         "sitegeist/fusionlinkprototypes": "^1.0",
         "spatie/crawler": "^4.1",

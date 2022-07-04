@@ -8,9 +8,9 @@ use CodeQ\LinkChecker\Domain\Crawler\ContentNodeCrawler;
 use CodeQ\LinkChecker\Domain\Service\DomainService;
 use CodeQ\LinkChecker\Profile\CheckAllLinks;
 use CodeQ\LinkChecker\Reporter\LogBrokenLinks;
+use CodeQ\LinkChecker\Service\NotificationServiceInterface;
 use GuzzleHttp\RequestOptions;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
-use Neos\ContentRepository\Exception\NodeConfigurationException;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\CommandController;
 use Neos\Flow\Mvc\Exception\InvalidActionNameException;
@@ -23,7 +23,6 @@ use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
 use Neos\Flow\Persistence\Exception\InvalidQueryException;
 use Neos\Neos\Domain\Model\Domain;
 use Spatie\Crawler\Crawler;
-use Unikka\LinkChecker\Service\NotificationServiceInterface;
 
 /**
  * @Flow\Scope("singleton")
@@ -92,7 +91,7 @@ class CheckLinksCommandController extends CommandController
 
                 $crawler->startCrawling($url);
 
-                if ($this->settings['notificationEnabled'] ?? false) {
+                if ($this->settings['notifications']['enabled'] ?? false) {
                     $this->sendNotification($crawlObserver->getResultItemsGroupedByStatusCode());
                 }
             } catch (\InvalidArgumentException $exception) {
@@ -178,10 +177,10 @@ class CheckLinksCommandController extends CommandController
             throw new \InvalidArgumentException($errorMessage, 1540201992);
         }
 
-        $minimumStatusCode = is_numeric($this->settings['minimumStatusCode']) ? $this->settings['minimumStatusCode'] : self::MIN_STATUS_CODE;
+        $minimumStatusCode = $this->settings['notifications']['minimumStatusCode'] ?? self::MIN_STATUS_CODE;
         $arguments = [];
         foreach ($results as $statusCode => $urls) {
-            if ($statusCode < $minimumStatusCode) {
+            if ($statusCode < (int)$minimumStatusCode) {
                 continue;
             }
 
@@ -194,7 +193,7 @@ class CheckLinksCommandController extends CommandController
 
         /** @var NotificationServiceInterface $notificationService */
         $notificationService = $this->objectManager->get($notificationServiceClass);
-        $notificationService->sendNotification($this->settings['subject'] ?? '', $arguments);
+        $notificationService->sendNotification($this->settings['notifications']['subject'] ?? '', $arguments);
     }
 
     /**
@@ -207,11 +206,10 @@ class CheckLinksCommandController extends CommandController
      * @throws InvalidArgumentNameException
      * @throws InvalidArgumentTypeException
      * @throws InvalidControllerNameException
+     * @throws InvalidQueryException
      * @throws MissingActionNameException
-     * @throws NodeConfigurationException
      * @throws UnresolvedDependenciesException
      * @throws \Neos\Eel\Exception
-     * @throws InvalidQueryException
      * @throws \Neos\Flow\Property\Exception
      * @throws \Neos\Flow\Security\Exception
      * @throws \Neos\Neos\Exception
