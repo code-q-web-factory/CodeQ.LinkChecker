@@ -3,6 +3,42 @@ CodeQ:
     # how many concurrent requests should the command controller perform
     # If set too high, you most DOS your server
     concurrency: 10
+    ignoreRobots: false
+    excludeStatusCodes: []
+
+    clientOptions:
+      cookies: true
+      connectionTimeout: 10
+      timeout: 10
+      allowRedirects: false
+      auth: []
+
+    notifications:
+      enabled: false
+      service: 'CodeQ\LinkChecker\Service\EmailService'
+      subject: 'Link checker results'
+      minimumStatusCode: 400
+      mail:
+        sender:
+          default:
+            name: 'CodeQ'
+            address: 'no-reply@example.com'
+        recipient:
+          default:
+            name: 'CodeQ'
+            address: 'test@example.com'
+        template:
+          package: 'CodeQ.LinkChecker'
+          file: 'NotificationMail'
+        attachment:
+          enableMailAttachment: true
+          csvHeader:
+            - 'Status code'
+            - 'URL'
+            - 'Origin URL'
+        logging:
+          errors: log
+          success: log
 
     urlsToCrawl:
       - https://neos.io

@@ -27,6 +27,7 @@ final class Version20220613120152 extends AbstractMigration
         persistence_object_identifier VARCHAR(40) NOT NULL,
         domain VARCHAR(255) NOT NULL,
         source VARCHAR(2000) NULL,
+        sourcepath VARCHAR(2000) NULL,
         target VARCHAR(2000) NOT NULL,
         statuscode INT NOT NULL,
         `ignore` TINYINT(1) NOT NULL,

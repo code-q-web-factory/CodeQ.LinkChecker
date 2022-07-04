@@ -21,7 +21,12 @@ class ResultItem
     /**
      * @var string|null
      */
-    protected string $source;
+    protected ?string $source = null;
+
+    /**
+     * @var string|null
+     */
+    protected ?string $sourcePath = null;
 
     /**
      * @var string
@@ -32,11 +37,6 @@ class ResultItem
      * @var integer
      */
     protected int $statusCode;
-
-    /**
-     * @var boolean
-     */
-    protected bool $done = false;
 
     /**
      * @ORM\Column(name="`ignore`")
@@ -81,12 +81,29 @@ class ResultItem
     }
 
     /**
-     * @param string $source
+     * @param string|null $source
      * @return void
      */
     public function setSource(?string $source = null): void
     {
         $this->source = $source;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSourcePath(): ?string
+    {
+        return $this->sourcePath;
+    }
+
+    /**
+     * @param string|null $sourcePath
+     * @return void
+     */
+    public function setSourcePath(?string $sourcePath = null): void
+    {
+        $this->sourcePath = $sourcePath;
     }
 
     /**
@@ -121,23 +138,6 @@ class ResultItem
     public function setStatusCode(int $statusCode): void
     {
         $this->statusCode = $statusCode;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function getDone(): bool
-    {
-        return $this->done;
-    }
-
-    /**
-     * @param boolean $done
-     * @return void
-     */
-    public function setDone(bool $done): void
-    {
-        $this->done = $done;
     }
 
     /**

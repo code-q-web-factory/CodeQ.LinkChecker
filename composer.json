@@ -6,6 +6,7 @@
     "require": {
         "neos/neos": "^4.3 || 5 - 8 || dev-master",
         "sitegeist/fusionlinkprototypes": "^1.0",
+        "spatie/crawler": "^4.1",
         "symfony/polyfill-php80": "^1.16"
     },
     "autoload": {

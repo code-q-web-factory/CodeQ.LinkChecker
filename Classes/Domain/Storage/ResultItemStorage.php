@@ -30,7 +30,9 @@ class ResultItemStorage
 
     public function findAll(): QueryResultInterface
     {
-        return $this->resultItemRepository->findAll();
+        $query = $this->resultItemRepository->createQuery();
+        $query->matching($query->equals('ignore', 0));
+        return $query->execute();
     }
 
     /**

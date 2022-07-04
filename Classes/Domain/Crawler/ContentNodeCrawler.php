@@ -142,11 +142,14 @@ class ContentNodeCrawler
 
     protected function createResultItem(Context $context, Domain $domain, NodeInterface $node, string $uri): void
     {
-        $sourceNodePath = $this->getDocumentNodeOfContentNode($node)->getNodeData()->getPath();
+        $documentNode = $this->getDocumentNodeOfContentNode($node);
+        $sourceNodeIdentifier = $documentNode->getNodeData()->getIdentifier();
+        $sourceNodePath = $documentNode->getNodeData()->getPath();
 
         $resultItem = new ResultItem();
         $resultItem->setDomain($domain->getHostname());
-        $resultItem->setSource($sourceNodePath);
+        $resultItem->setSource($sourceNodeIdentifier);
+        $resultItem->setSourcePath($sourceNodePath);
         $resultItem->setTarget($uri);
         $resultItem->setStatusCode(404);
         $resultItem->setCreatedAt($context->getCurrentDateTime());

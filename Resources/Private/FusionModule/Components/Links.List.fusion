@@ -25,23 +25,65 @@ prototype(CodeQ.LinkChecker:Component.Links.List) < prototype(Neos.Fusion:Compon
 prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:Component) {
     link = '{}'
 
+    sourcePath = Neos.Fusion:Case {
+        isNode {
+            condition = ${String.startsWith(link.sourcePath, '/sites')}
+
+            renderer = ${link.sourcePath}
+        }
+
+        isExternal {
+            condition = ${String.startsWith(link.sourcePath, 'http')}
+            // thanks to: https://stackoverflow.com/a/441771
+            renderer = ${String.pregReplace(link.sourcePath, '#(https?://[^/]*)(/.*)#', '$2')}
+        }
+
+        fallback {
+            condition = ${true}
+            renderer = '#'
+        }
+    }
+
     linkToEditNode = Sitegeist.FusionLinkPrototypes:ActionUri {
         package = 'Neos.Neos.Ui'
         controller = 'Backend'
         action = 'index'
-        arguments.node = ${link.source}
+        arguments.node = ${link.sourcePath}
+    }
+
+    frontendUrl = Neos.Fusion:Case {
+        isNode {
+            condition = ${String.startsWith(link.sourcePath, '/sites')}
+
+            renderer = Sitegeist.FusionLinkPrototypes:ActionUri {
+                package = 'Neos.Neos'
+                controller = 'Frontend\\Node'
+                action = 'show'
+                arguments.node = ${link.sourcePath}
+            }
+        }
+
+        isExternal {
+            condition = ${String.startsWith(link.sourcePath, 'http')}
+
+            renderer = ${link.sourcePath}
+        }
+
+        fallback {
+            condition = ${true}
+            renderer = '#'
+        }
     }
 
     target = Neos.Fusion:Case {
         isNode {
             condition = ${String.startsWith(link.target, 'node://')}
 
-            renderer = Neos.Fusion:UriBuilder {
-                package = 'Neos.Neos.Ui'
-                controller = 'Backend'
-                action = 'index'
-                // Please replace with the correct path to node
-                arguments.node = ${link.source}
+            renderer = Sitegeist.FusionLinkPrototypes:ActionUri {
+                package = 'Neos.Neos'
+                controller = 'Frontend\Node'
+                action = 'show'
+                arguments.node = ${link.sourcePath}
             }
         }
 
@@ -74,11 +116,11 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
         <tr>
             <td>{link.domain}</td>
             <td>
-                {link.source}
-                <a href={props.linkToEditNode} target="_blank" class="neos-button neos-button--small">
+                {props.sourcePath}
+                <a @if={String.startsWith(link.sourcePath, '/sites')} href={props.linkToEditNode} target="_blank" class="neos-button neos-button--small">
                     <i class="fas fa-edit"></i>
                 </a>
-                <a href={link.source} target="_blank" class="neos-button neos-button--small">
+                <a href={props.frontendUrl} target="_blank" class="neos-button neos-button--small">
                     <i class="fas fa-external-link-alt"></i>
                 </a>
             </td>

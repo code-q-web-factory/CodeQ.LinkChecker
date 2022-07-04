@@ -32,14 +32,50 @@
             <trans-unit id="error">
                 <source>Fehler</source>
             </trans-unit>
-            <trans-unit id="error.404">
-                <source>Nicht gefunden (404)</source>
+            <trans-unit id="error.0">
+                <source>Timeout (0)</source>
+            </trans-unit>
+            <trans-unit id="error.302">
+                <source>Found (Moved Temporarily) (302)</source>
+            </trans-unit>
+            <trans-unit id="error.303">
+                <source>See other (303)</source>
+            </trans-unit>
+            <trans-unit id="error.307">
+                <source>Temporary Redirect (307)</source>
+            </trans-unit>
+            <trans-unit id="error.308">
+                <source>Permanent Redirect (308)</source>
+            </trans-unit>
+            <trans-unit id="error.400">
+                <source>Bad Request (400)</source>
+            </trans-unit>
+            <trans-unit id="error.401">
+                <source>Unauthorized (401)</source>
             </trans-unit>
             <trans-unit id="error.403">
                 <source>Zugriff verboten (403)</source>
             </trans-unit>
+            <trans-unit id="error.404">
+                <source>Nicht gefunden (404)</source>
+            </trans-unit>
+            <trans-unit id="error.405">
+                <source>Method Not Allowed (405)</source>
+            </trans-unit>
+            <trans-unit id="error.408">
+                <source>Request Timeout (408)</source>
+            </trans-unit>
+            <trans-unit id="error.429">
+                <source>Too Many Requests (429)</source>
+            </trans-unit>
             <trans-unit id="error.500">
                 <source>Interner Fehler (500)</source>
+            </trans-unit>
+            <trans-unit id="error.503">
+                <source>Service Unavailable (503)</source>
+            </trans-unit>
+            <trans-unit id="error.509">
+                <source>Bandwidth Limit Exceeded (509)</source>
             </trans-unit>
             <trans-unit id="foundAt">
                 <source>Gefunden am</source>
