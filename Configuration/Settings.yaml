@@ -43,10 +43,6 @@ CodeQ:
           success: log
 
     urlsToCrawl:
-      - https://neos.io
-      - https://codeq.at
-      - https://example.org
-      - https://example.org/a-nowhere-linked-page-to-also-check
 
 Neos:
   Neos:
