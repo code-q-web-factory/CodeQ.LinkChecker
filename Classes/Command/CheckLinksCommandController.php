@@ -66,14 +66,14 @@ class CheckLinksCommandController extends CommandController
         $this->settings = $settings;
     }
 
-    public function crawlCommand($concurrency = 10): void
+    public function crawlCommand(): void
     {
         $crawlProfile = new CheckAllLinks();
         $crawlObserver = new LogBrokenLinks();
         $clientOptions = $this->getClientOptions();
 
         $crawler = Crawler::create($clientOptions)
-            ->setConcurrency($this->getConcurrency($concurrency))
+            ->setConcurrency($this->getConcurrency())
             ->setCrawlObserver($crawlObserver)
             ->setCrawlProfile($crawlProfile);
 
@@ -144,12 +144,8 @@ class CheckLinksCommandController extends CommandController
      * Returns concurrency. If not found, simply returns a default value like
      * 10 (default).
      */
-    protected function getConcurrency(int $concurrency): int
+    protected function getConcurrency(): int
     {
-        if ($concurrency >= 0) {
-            return $concurrency;
-        }
-
         if (isset($this->settings['concurrency']) && (int)$this->settings['concurrency'] >= 0) {
             return (int)$this->settings['concurrency'];
         }
