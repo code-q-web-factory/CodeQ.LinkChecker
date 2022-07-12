@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Neos\Flow\Persistence\Doctrine\Migrations;
 
-use Doctrine\DBAL\Platforms\MySQL80Platform;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
@@ -18,8 +18,9 @@ final class Version20220613120152 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof MySQL80Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MySQL80Platform'."
+            $this->connection->getDatabasePlatform() instanceof AbstractPlatform
+            && $this->connection->getDatabasePlatform()->getName() !== "mysql",
+            "Migration can only be executed safely on MySql and MariaDB."
         );
 
         $this->addSql(<<<SQL
@@ -45,8 +46,9 @@ SQL
     public function down(Schema $schema): void
     {
         $this->abortIf(
-            !$this->connection->getDatabasePlatform() instanceof MySQL80Platform,
-            "Migration can only be executed safely on '\Doctrine\DBAL\Platforms\MySQL80Platform'."
+            $this->connection->getDatabasePlatform() instanceof AbstractPlatform
+            && $this->connection->getDatabasePlatform()->getName() !== "mysql",
+            "Migration can only be executed safely on MySql and MariaDB."
         );
 
         $this->addSql('DROP TABLE codeq_linkchecker_domain_model_resultitem');
