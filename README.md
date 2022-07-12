@@ -27,11 +27,11 @@ CodeQ:
     # how many concurrent requests should the command controller perform
     # If set too high, you will DDoS your server
     concurrency: 10
-  pagesToCrawl:
-    - https://neos.io
-    - https://codeq.at
-    - https://example.org
-    - https://example.org/a-nowhere-linked-page-to-also-check
+    pagesToCrawl:
+      - https://neos.io
+      - https://codeq.at
+      - https://example.org
+      - https://example.org/a-nowhere-linked-page-to-also-check
 ```
 
 Setup a cronjob e.g. daily to execute `./flow linkchecker:sync` 
