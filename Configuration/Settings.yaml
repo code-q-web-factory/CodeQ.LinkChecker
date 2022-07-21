@@ -1,3 +1,49 @@
+CodeQ:
+  LinkChecker:
+    # how many concurrent requests should the command controller perform
+    # If set too high, you most DOS your server
+    concurrency: 10
+    ignoreRobots: false
+    excludeStatusCodes: []
+
+    clientOptions:
+      cookies: true
+      connectionTimeout: 10
+      timeout: 10
+      allowRedirects: false
+      auth: []
+
+    notifications:
+      enabled: true
+      service: 'CodeQ\LinkChecker\Service\EmailService'
+      subject: 'Link checker results'
+      minimumStatusCode: 300
+      mail:
+        sender:
+          default:
+            name: 'CodeQ'
+            address: 'no-reply@example.com'
+        recipient:
+          default:
+            name: 'CodeQ'
+            address: 'test@example.com'
+        template:
+          package: 'CodeQ.LinkChecker'
+          file: 'NotificationMail'
+        attachment:
+          enableMailAttachment: true
+          csvHeader:
+            - 'Status code'
+            - 'URL'
+            - 'Origin URL'
+            - 'Domain'
+            - 'Checked at'
+        logging:
+          errors: log
+          success: log
+
+    urlsToCrawl:
+
 Neos:
   Neos:
     userInterface:
@@ -11,9 +57,9 @@ Neos:
             label: 'CodeQ.LinkChecker:Modules:module.label'
             description: 'CodeQ.LinkChecker:Modules:module.description'
             icon: 'fas fa-link'
-            controller: '\CodeQ\LinkChecker\Controller\ModuleController'
+            controller: \CodeQ\LinkChecker\Controller\Backend\ModuleController
             resource: 'CodeQ.LinkChecker:Backend.Module'
-            privilegeTarget: 'CodeQ.LinkChecker:Module'
+            privilegeTarget: 'CodeQ.LinkChecker:Backend.Module'
             additionalResources:
               styleSheets:
                 - 'resource://CodeQ.LinkChecker/Public/Styles/link-checker.css'
