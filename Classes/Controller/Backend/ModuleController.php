@@ -9,9 +9,10 @@ use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Service\DomainService;
 use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
-use Neos\ContentRepository\Exception\NodeConfigurationException;
 use Neos\Error\Messages\Message;
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\I18n\Exception\IndexOutOfBoundsException;
+use Neos\Flow\I18n\Exception\InvalidFormatPlaceholderException;
 use Neos\Flow\I18n\Translator;
 use Neos\Flow\Mvc\Exception\InvalidActionNameException;
 use Neos\Flow\Mvc\Exception\InvalidArgumentNameException;
@@ -89,12 +90,13 @@ class ModuleController extends AbstractModuleController
      * @throws InvalidArgumentNameException
      * @throws InvalidArgumentTypeException
      * @throws InvalidControllerNameException
+     * @throws InvalidQueryException
      * @throws MissingActionNameException
-     * @throws NodeConfigurationException
      * @throws StopActionException
      * @throws UnresolvedDependenciesException
      * @throws \Neos\Eel\Exception
-     * @throws InvalidQueryException
+     * @throws IndexOutOfBoundsException
+     * @throws InvalidFormatPlaceholderException
      * @throws \Neos\Flow\Property\Exception
      * @throws \Neos\Flow\Security\Exception
      * @throws \Neos\Neos\Exception
@@ -107,6 +109,17 @@ class ModuleController extends AbstractModuleController
         $urlsToCrawl = $this->settings['urlsToCrawl'];
 
         $domainsToCrawl = $this->domainService->getDomainsToCrawl($urlsToCrawl);
+
+        if (count($domainsToCrawl) === 0) {
+            $this->addFlashMessage(
+                $this->translator->translatebyid('noDomainsFound', [], null, null, 'Modules', 'CodeQ.LinkChecker'),
+                '',
+                Message::SEVERITY_ERROR,
+                [],
+                1412373973
+            );
+            $this->redirect('index');
+        }
 
         foreach ($domainsToCrawl as $domainToCrawl) {
             $messagesPerDomain = $this->crawlDomain($domainToCrawl);

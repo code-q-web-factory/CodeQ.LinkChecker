@@ -32,6 +32,54 @@
             <trans-unit id="error">
                 <source>Error</source>
             </trans-unit>
+            <trans-unit id="error.0">
+                <source>Timeout (0)</source>
+            </trans-unit>
+            <trans-unit id="error.301">
+                <source>Dauerhaft verschoben (301)</source>
+            </trans-unit>
+            <trans-unit id="error.302">
+                <source>Found (Moved Temporarily) (302)</source>
+            </trans-unit>
+            <trans-unit id="error.303">
+                <source>Siehe anderswo (303)</source>
+            </trans-unit>
+            <trans-unit id="error.307">
+                <source>Zeitweise Umleitung (307)</source>
+            </trans-unit>
+            <trans-unit id="error.308">
+                <source>Dauerhafte Umleitung (308)</source>
+            </trans-unit>
+            <trans-unit id="error.400">
+                <source>Ungültige Anfrage (400)</source>
+            </trans-unit>
+            <trans-unit id="error.401">
+                <source>Unautorisiert (401)</source>
+            </trans-unit>
+            <trans-unit id="error.403">
+                <source>Verboten (403)</source>
+            </trans-unit>
+            <trans-unit id="error.404">
+                <source>Nicht gefunden (404)</source>
+            </trans-unit>
+            <trans-unit id="error.405">
+                <source>Methode nicht erlaubt (405)</source>
+            </trans-unit>
+            <trans-unit id="error.408">
+                <source>Anfrage-Zeitüberschreitung (408)</source>
+            </trans-unit>
+            <trans-unit id="error.429">
+                <source>Zu viele Anfragen (429)</source>
+            </trans-unit>
+            <trans-unit id="error.500">
+                <source>Interner Server-Fehler (500)</source>
+            </trans-unit>
+            <trans-unit id="error.503">
+                <source>Dienst nicht verfügbar (503)</source>
+            </trans-unit>
+            <trans-unit id="error.509">
+                <source>Datenvolumen überschritten (509)</source>
+            </trans-unit>
             <trans-unit id="foundAt">
                 <source>Found at</source>
             </trans-unit>
@@ -43,6 +91,19 @@
             <trans-unit id="list.empty">
                 <source>There are currently no invalid links.</source>
             </trans-unit>
+
+            <trans-unit id="noDomainsFound">
+                <source>Es wurden keine passenden Domains in den Websites gefunden.</source>
+            </trans-unit>
+
+            <group id="errorsFound" restype="x-gettext-plurals">
+                <trans-unit id="errorsFound[0]" >
+                    <source>{amountOfErrors} ungültigen Link in der Domäne {domain} gefunden</source>
+                </trans-unit>
+                <trans-unit id="errorsFound[1]" >
+                    <source>{amountOfErrors} ungültige Links in der Domäne {domain} gefunden</source>
+                </trans-unit>
+            </group>
         </body>
     </file>
 </xliff>

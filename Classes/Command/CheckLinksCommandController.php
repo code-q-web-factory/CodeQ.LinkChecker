@@ -13,6 +13,7 @@ use GuzzleHttp\RequestOptions;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\CommandController;
+use Neos\Flow\I18n\Translator;
 use Neos\Flow\Mvc\Exception\InvalidActionNameException;
 use Neos\Flow\Mvc\Exception\InvalidArgumentNameException;
 use Neos\Flow\Mvc\Exception\InvalidArgumentTypeException;
@@ -31,6 +32,12 @@ use Spatie\Crawler\Crawler;
 class CheckLinksCommandController extends CommandController
 {
     public const MIN_STATUS_CODE = 404;
+
+    /**
+     * @Flow\Inject
+     * @var Translator
+     */
+    protected $translator;
 
     /**
      * @Flow\Inject
@@ -216,6 +223,11 @@ class CheckLinksCommandController extends CommandController
         $urlsToCrawl = $this->settings['urlsToCrawl'];
 
         $domainsToCrawl = $this->domainService->getDomainsToCrawl($urlsToCrawl);
+
+        if (count($domainsToCrawl) === 0) {
+            $message = $this->translator->translatebyid('noDomainsFound', [], null, null, 'Modules', 'CodeQ.LinkChecker');
+            $this->output->outputFormatted('<error>' . $message . '</error>');
+        }
 
         foreach ($domainsToCrawl as $domainToCrawl) {
             $this->crawlDomain($domainToCrawl);
