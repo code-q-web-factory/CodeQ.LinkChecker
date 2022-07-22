@@ -9,6 +9,7 @@ use CodeQ\LinkChecker\Domain\Repository\ResultItemRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
+use Neos\Flow\Persistence\QueryInterface;
 use Neos\Flow\Persistence\QueryResultInterface;
 
 class ResultItemStorage
@@ -32,6 +33,11 @@ class ResultItemStorage
     {
         $query = $this->resultItemRepository->createQuery();
         $query->matching($query->equals('ignore', 0));
+        $query->setOrderings(
+            [
+                'source' => QueryInterface::ORDER_ASCENDING,
+            ]
+        );
         return $query->execute();
     }
 
