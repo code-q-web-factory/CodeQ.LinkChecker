@@ -48,7 +48,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
         package = 'Neos.Neos.Ui'
         controller = 'Backend'
         action = 'index'
-        arguments.node = ${link.sourcePath}
+        arguments.node = ${link.sourcePath + '@' + Neos.Ui.Workspace.getPersonalWorkspace()['name']}
     }
 
     frontendUrl = Neos.Fusion:Case {
