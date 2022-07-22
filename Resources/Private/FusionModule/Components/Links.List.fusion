@@ -29,7 +29,8 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
         isNode {
             condition = ${String.startsWith(link.sourcePath, '/sites')}
 
-            renderer = ${link.sourcePath}
+            // strip "/sites/site-identifier". Root notes don't have a "/" at the end, therefor add it manually
+            renderer = ${String.replace('/' + String.pregReplace(link.sourcePath, '#/sites/(?:[^/]+)(.*)#', '$1'), '//', '/')}
         }
 
         isExternal {
