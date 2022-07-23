@@ -123,7 +123,7 @@ class ContentNodeCrawler
 
         $absolute = true;
 
-        $processedContent = preg_replace_callback(
+        preg_replace_callback(
             LinkingService::PATTERN_SUPPORTED_URIS,
             function (array $matches) use (
                 $node,
