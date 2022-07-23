@@ -117,7 +117,7 @@ class ContentNodeCrawler
             return;
         }
 
-        if (!str_contains($property, 'node://')) {
+        if (!str_contains($property, 'node://') && !str_contains($property, 'asset://')) {
             return;
         }
 
@@ -139,6 +139,9 @@ class ContentNodeCrawler
                             $controllerContext,
                             $absolute
                         );
+                        break;
+                    case 'asset':
+                        $resolvedUri = $this->linkingService->resolveAssetUri($matches[0]);
                         break;
                     default:
                         $resolvedUri = null;
