@@ -65,12 +65,12 @@ class ContentNodeCrawler
      */
     public function crawl(Context $context, Domain $domain): array
     {
-        /** @var Node[] $node */
         $allContentNodes = (new FlowQuery([$context->getCurrentSiteNode()]))->find('[instanceof Neos.Neos:Content]')->get();
 
         $messages = [];
 
         foreach ($allContentNodes as $node) {
+            /** @var Node $node */
             $nodeData = $node->getNodeData();
 
             $unresolvedUris = [];
