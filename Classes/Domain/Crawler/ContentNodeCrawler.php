@@ -26,6 +26,13 @@ use Neos\Neos\Service\LinkingService;
 class ContentNodeCrawler
 {
     /**
+     * Pattern to match telephone numbers.
+     *
+     * @var string
+     */
+    protected const PATTERN_SUPPORTED_PHONE_NUMBERS = '/href="(tel):(\+?\d*)/';
+
+    /**
      * @Flow\Inject
      * @var ResultItemStorage
      */
@@ -67,18 +74,26 @@ class ContentNodeCrawler
             $nodeData = $node->getNodeData();
 
             $unresolvedUris = [];
+            $invalidPhoneNumbers = [];
             $controllerContext = $this->controllerContextFactory->create($domain);
 
             $properties = $nodeData->getProperties();
 
             foreach ($properties as $property) {
-                $this->crawlProperty($property, $node, $controllerContext, $unresolvedUris);
+                $this->crawlPropertyForNodesAndAssets($property, $node, $controllerContext, $unresolvedUris);
+                $this->crawlPropertyForTelephoneNumbers($property, $invalidPhoneNumbers);
             }
 
             foreach ($unresolvedUris as $uri) {
                 $messages[] = 'Not found: ' . $uri;
 
-                $this->createResultItem($context, $domain, $node, $uri);
+                $this->createResultItem($context, $domain, $node, $uri, 404);
+            }
+            foreach ($invalidPhoneNumbers as $phoneNumber) {
+                $messages[] = 'Invalid format: ' . $phoneNumber;
+
+                /* @see https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml - 490 is unassigned, and so we can use it */
+                $this->createResultItem($context, $domain, $node, $phoneNumber, 490);
             }
         }
 
@@ -92,7 +107,7 @@ class ContentNodeCrawler
      * @throws \Neos\Neos\Exception
      * @see \Neos\Neos\Fusion\ConvertUrisImplementation::evaluate
      */
-    protected function crawlProperty(
+    protected function crawlPropertyForNodesAndAssets(
         $property,
         NodeInterface $node,
         ControllerContext $controllerContext,
@@ -140,8 +155,45 @@ class ContentNodeCrawler
         );
     }
 
-    protected function createResultItem(Context $context, Domain $domain, NodeInterface $node, string $uri): void
-    {
+    private function crawlPropertyForTelephoneNumbers(
+        $property,
+        array &$invalidPhoneNumbers
+    ): void {
+        if (!is_string($property)) {
+            return;
+        }
+
+        if (!str_contains($property, 'tel:')) {
+            return;
+        }
+
+        preg_replace_callback(
+            self::PATTERN_SUPPORTED_PHONE_NUMBERS,
+            static function (array $matches) use (&$invalidPhoneNumbers) {
+                if ($matches[1] === 'tel') {
+                    $resolvedUri = str_starts_with($matches[2], '+') ? $matches[2] : null;
+                } else {
+                    $resolvedUri = null;
+                }
+
+                if ($resolvedUri === null) {
+                    $invalidPhoneNumbers[] = 'tel:' . $matches[2];
+                    return $matches[0];
+                }
+
+                return $resolvedUri;
+            },
+            $property
+        );
+    }
+
+    protected function createResultItem(
+        Context $context,
+        Domain $domain,
+        NodeInterface $node,
+        string $uri,
+        int $statusCode
+    ): void {
         $documentNode = $this->getDocumentNodeOfContentNode($node);
         $sourceNodeIdentifier = $documentNode->getNodeData()->getIdentifier();
         $sourceNodePath = $documentNode->getNodeData()->getPath();
@@ -151,7 +203,7 @@ class ContentNodeCrawler
         $resultItem->setSource($sourceNodeIdentifier);
         $resultItem->setSourcePath($sourceNodePath);
         $resultItem->setTarget($uri);
-        $resultItem->setStatusCode(404);
+        $resultItem->setStatusCode($statusCode);
         $resultItem->setCreatedAt($context->getCurrentDateTime());
         $resultItem->setCheckedAt($context->getCurrentDateTime());
 

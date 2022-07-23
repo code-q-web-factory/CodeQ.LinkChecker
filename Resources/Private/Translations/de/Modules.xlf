@@ -71,6 +71,9 @@
             <trans-unit id="error.429">
                 <source>Zu viele Anfragen (429)</source>
             </trans-unit>
+            <trans-unit id="error.490">
+                <source>Telefonnummern sollten im internationalen Format angegeben werden (490)</source>
+            </trans-unit>
             <trans-unit id="error.500">
                 <source>Interner Server-Fehler (500)</source>
             </trans-unit>
