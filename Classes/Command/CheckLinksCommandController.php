@@ -73,7 +73,34 @@ class CheckLinksCommandController extends CommandController
         $this->settings = $settings;
     }
 
+    /**
+     * Crawl for invalid node links and external links
+     *
+     * @throws \Neos\Flow\Security\Exception
+     * @throws UnresolvedDependenciesException
+     * @throws InvalidArgumentTypeException
+     * @throws \Neos\Eel\Exception
+     * @throws \Neos\Flow\Property\Exception
+     * @throws InvalidArgumentNameException
+     * @throws \Neos\Neos\Exception
+     * @throws MissingActionNameException
+     * @throws IllegalObjectTypeException
+     * @throws InvalidActionNameException
+     * @throws InvalidQueryException
+     * @throws InvalidControllerNameException
+     */
     public function crawlCommand(): void
+    {
+        $this->crawlNodesCommand();
+        $this->crawlExternalLinksCommand();
+    }
+
+    /**
+     * Crawl for invalid external links
+     *
+     * This command crawls the whole website for invalid external links
+     */
+    public function crawlExternalLinksCommand(): void
     {
         $crawlProfile = new CheckAllLinks();
         $crawlObserver = new LogBrokenLinks();
