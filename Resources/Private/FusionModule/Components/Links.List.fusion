@@ -82,7 +82,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
 
             renderer = Sitegeist.FusionLinkPrototypes:ActionUri {
                 package = 'Neos.Neos'
-                controller = 'Frontend\Node'
+                controller = 'Frontend\\Node'
                 action = 'show'
                 arguments.node = ${link.sourcePath}
             }
