@@ -139,7 +139,6 @@ abstract class BaseReporter extends CrawlObserver
      * redirect response.
      *
      * @param int|string $statusCode
-     *
      * @return bool
      */
     protected function isSuccessOrRedirect($statusCode): bool
@@ -162,12 +161,10 @@ abstract class BaseReporter extends CrawlObserver
      * from the reporter.
      *
      * @param int|string $statusCode
-     *
      * @return bool
      */
     protected function isExcludedStatusCode($statusCode): bool
     {
-        $excludedStatusCodes = is_array($this->excludeStatusCodes) ? $this->excludeStatusCodes : [];
-        return in_array($statusCode, $excludedStatusCodes, true);
+        return in_array($statusCode, $this->excludeStatusCodes, true);
     }
 }
