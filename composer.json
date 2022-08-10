@@ -20,6 +20,9 @@
     "extra": {
         "neos": {
             "package-key": "CodeQ.LinkChecker"
-        }
+        },
+        "applied-flow-migrations": [
+            "TYPO3.Form-20160601101500"
+        ]
     }
 }
