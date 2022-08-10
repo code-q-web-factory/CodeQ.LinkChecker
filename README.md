@@ -34,6 +34,8 @@ CodeQ:
       - https://example.org/a-nowhere-linked-page-to-also-check
 ```
 
+Make sure the domains are also added in the "Sites Management"!
+
 Setup a cronjob e.g. daily to execute `./flow linkchecker:sync` 
 
 ## Limitations and possible future Features:
