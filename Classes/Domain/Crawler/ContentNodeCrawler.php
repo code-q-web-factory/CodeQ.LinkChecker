@@ -7,6 +7,7 @@ namespace CodeQ\LinkChecker\Domain\Crawler;
 use CodeQ\LinkChecker\Domain\Factory\ControllerContextFactory;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
+use GuzzleHttp\Psr7\ServerRequest;
 use Neos\ContentRepository\Domain\Model\Node;
 use Neos\ContentRepository\Domain\Model\NodeInterface;
 use Neos\ContentRepository\Domain\Service\Context;
@@ -17,9 +18,14 @@ use Neos\Flow\Mvc\Exception\InvalidActionNameException;
 use Neos\Flow\Mvc\Exception\InvalidArgumentNameException;
 use Neos\Flow\Mvc\Exception\InvalidArgumentTypeException;
 use Neos\Flow\Mvc\Exception\InvalidControllerNameException;
+use Neos\Flow\Mvc\Exception\NoMatchingRouteException;
+use Neos\Flow\Mvc\Routing\Dto\RouteContext;
+use Neos\Flow\Mvc\Routing\Dto\RouteParameters;
 use Neos\Flow\Mvc\Routing\Exception\MissingActionNameException;
+use Neos\Flow\Mvc\Routing\RouterInterface;
 use Neos\Flow\ObjectManagement\Exception\UnresolvedDependenciesException;
 use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
+use Neos\Http\Factories\UriFactory;
 use Neos\Neos\Domain\Model\Domain;
 use Neos\Neos\Service\LinkingService;
 
@@ -49,6 +55,12 @@ class ContentNodeCrawler
      * @var LinkingService
      */
     protected $linkingService;
+
+    /**
+     * @Flow\Inject
+     * @var RouterInterface
+     */
+    protected $router;
 
     /**
      * @throws \Neos\Eel\Exception
@@ -139,6 +151,23 @@ class ContentNodeCrawler
                             $controllerContext,
                             $absolute
                         );
+
+                        if ($resolvedUri !== null) {
+                            // Check if uri is reachable or if a parent page is disabled for example
+                            // Same logic as in RoutingMiddleware
+                            $uri = (new UriFactory())->createUri($resolvedUri);
+                            $parameters = RouteParameters::createEmpty()
+                                ->withParameter('requestUriHost', $uri->getHost());
+
+                            $request = new ServerRequest('GET', $uri);
+                            $routeContext = new RouteContext($request, $parameters);
+                            try {
+                                $this->router->route($routeContext);
+                            } catch (NoMatchingRouteException $e) {
+                                $resolvedUri = null;
+                            }
+                        }
+
                         break;
                     case 'asset':
                         $resolvedUri = $this->linkingService->resolveAssetUri($matches[0]);
