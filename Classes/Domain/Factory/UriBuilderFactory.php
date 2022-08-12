@@ -22,14 +22,14 @@ use Psr\Http\Message\ServerRequestFactoryInterface;
 class UriBuilderFactory
 {
     /**
-     * @Flow\Inject
      * @var ServerRequestFactoryInterface
+     * @Flow\Inject
      */
     protected $serverRequestFactory;
 
     /**
-     * @Flow\Inject
      * @var ActionRequestFactory
+     * @Flow\Inject
      */
     protected $actionRequestFactory;
 

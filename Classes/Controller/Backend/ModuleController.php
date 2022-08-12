@@ -44,33 +44,32 @@ class ModuleController extends AbstractModuleController
     protected $defaultViewObjectName = FusionView::class;
 
     /**
-     * @Flow\Inject
      * @var Translator
+     * @Flow\Inject
      */
     protected $translator;
 
     /**
-     * @Flow\Inject
-     *
      * @var ResultItemStorage
+     * @Flow\Inject
      */
     protected $resultItemStorage;
 
     /**
-     * @Flow\Inject
      * @var DomainService
+     * @Flow\Inject
      */
     protected $domainService;
 
     /**
-     * @Flow\Inject
      * @var ContentNodeCrawler
+     * @Flow\Inject
      */
     protected $contentNodeCrawler;
 
     /**
-     * @Flow\Inject
      * @var SetPageTitleForResultItemAction
+     * @Flow\Inject
      */
     protected $setPageTitleForResultItemAction;
 

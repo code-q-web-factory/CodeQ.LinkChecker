@@ -15,8 +15,8 @@ use Neos\Neos\Domain\Repository\DomainRepository;
 class DomainService
 {
     /**
-     * @Flow\Inject
      * @var DomainRepository
+     * @Flow\Inject
      */
     protected $domainRepository;
 

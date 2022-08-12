@@ -21,8 +21,8 @@ use Neos\Neos\Domain\Model\Domain;
 class ControllerContextFactory
 {
     /**
-     * @Flow\Inject
      * @var UriBuilderFactory
+     * @Flow\Inject
      */
     protected $uriBuilderFactory;
 

@@ -18,14 +18,14 @@ use GuzzleHttp\Exception\RequestException;
 abstract class BaseReporter extends CrawlObserver
 {
     /**
-     * @Flow\Inject
      * @var ResultItemStorage
+     * @Flow\Inject
      */
     protected $resultItemStorage;
 
     /**
-     * @Flow\Inject
      * @var ConsoleOutput
+     * @Flow\Inject
      */
     protected $output;
 

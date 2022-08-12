@@ -41,38 +41,38 @@ class ContentNodeCrawler
     protected const PATTERN_SUPPORTED_PHONE_NUMBERS = '/href="(tel):(\+?\d*)/';
 
     /**
-     * @Flow\Inject
      * @var ResultItemStorage
+     * @Flow\Inject
      */
     protected $resultItemStorage;
 
     /**
-     * @Flow\Inject
      * @var ControllerContextFactory
+     * @Flow\Inject
      */
     protected $controllerContextFactory;
 
     /**
-     * @Flow\Inject
      * @var ContextFactoryInterface
+     * @Flow\Inject
      */
     protected $contextFactory;
 
     /**
-     * @Flow\Inject
      * @var LinkingService
+     * @Flow\Inject
      */
     protected $linkingService;
 
     /**
-     * @Flow\Inject
      * @var RouterInterface
+     * @Flow\Inject
      */
     protected $router;
 
     /**
-     * @Flow\Inject
      * @var NodeDataRepository
+     * @Flow\Inject
      */
     protected $nodeDataRepository;
 

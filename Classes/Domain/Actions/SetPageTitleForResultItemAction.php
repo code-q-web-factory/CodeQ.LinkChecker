@@ -15,8 +15,8 @@ use Neos\Neos\Service\LinkingService;
 class SetPageTitleForResultItemAction
 {
     /**
-     * @Flow\Inject
      * @var ContextFactoryInterface
+     * @Flow\Inject
      */
     protected $contextFactory;
 

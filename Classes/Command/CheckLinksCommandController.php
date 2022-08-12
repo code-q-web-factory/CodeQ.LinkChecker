@@ -34,26 +34,26 @@ class CheckLinksCommandController extends CommandController
     public const MIN_STATUS_CODE = 404;
 
     /**
-     * @Flow\Inject
      * @var Translator
+     * @Flow\Inject
      */
     protected $translator;
 
     /**
-     * @Flow\Inject
      * @var DomainService
+     * @Flow\Inject
      */
     protected $domainService;
 
     /**
-     * @Flow\Inject
      * @var ContextFactoryInterface
+     * @Flow\Inject
      */
     protected $contextFactory;
 
     /**
-     * @Flow\Inject
      * @var ContentNodeCrawler
+     * @Flow\Inject
      */
     protected $contentNodeCrawler;
 

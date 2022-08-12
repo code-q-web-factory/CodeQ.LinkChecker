@@ -23,14 +23,14 @@ class EmailService implements NotificationServiceInterface
     public const LOG_LEVEL_THROW = 'throw';
 
     /**
-     * @Flow\Inject
      * @var LoggerInterface
+     * @Flow\Inject
      */
     protected $logger;
 
     /**
-     * @Flow\Inject
      * @var ConfigurationManager
+     * @Flow\Inject
      */
     protected $configurationManager;
 

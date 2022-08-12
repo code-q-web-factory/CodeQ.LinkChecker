@@ -15,17 +15,14 @@ use Neos\Flow\Persistence\QueryResultInterface;
 class ResultItemStorage
 {
     /**
-     * @Flow\Inject
-     *
      * @var ResultItemRepository
+     * @Flow\Inject
      */
     protected $resultItemRepository;
 
     /**
-     * Doctrine's Entity Manager.
-     *
-     * @Flow\Inject
      * @var EntityManagerInterface
+     * @Flow\Inject
      */
     protected $entityManager;
 

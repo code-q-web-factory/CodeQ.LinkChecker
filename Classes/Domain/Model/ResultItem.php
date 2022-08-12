@@ -50,8 +50,8 @@ class ResultItem
     protected int $statusCode;
 
     /**
-     * @ORM\Column(name="`ignore`")
      * @var boolean
+     * @ORM\Column(name="`ignore`")
      * ignore is a reserved mysql word, therefor escape it manually
      */
     protected bool $ignore = false;
