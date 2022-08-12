@@ -41,10 +41,6 @@ abstract class BaseReporter extends CrawlObserver
         return $this->resultItemsGroupedByStatusCode;
     }
 
-    public function __construct()
-    {
-    }
-
     /**
      * Outputs specified text to the console window and appends a line break
      *
