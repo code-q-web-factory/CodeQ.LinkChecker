@@ -30,6 +30,7 @@ final class Version20220613120152 extends AbstractMigration
         source VARCHAR(2000) NULL,
         sourcepath VARCHAR(2000) NULL,
         target VARCHAR(2000) NOT NULL,
+        targetpath VARCHAR(2000) NULL,
         statuscode INT NOT NULL,
         `ignore` TINYINT(1) NOT NULL,
         createdat DATETIME NOT NULL,

@@ -10,7 +10,9 @@ use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
 use GuzzleHttp\Psr7\ServerRequest;
 use Neos\ContentRepository\Domain\Model\Node;
 use Neos\ContentRepository\Domain\Model\NodeInterface;
+use Neos\ContentRepository\Domain\Repository\NodeDataRepository;
 use Neos\ContentRepository\Domain\Service\Context;
+use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Eel\FlowQuery\FlowQuery;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Mvc\Controller\ControllerContext;
@@ -52,6 +54,12 @@ class ContentNodeCrawler
 
     /**
      * @Flow\Inject
+     * @var ContextFactoryInterface
+     */
+    protected $contextFactory;
+
+    /**
+     * @Flow\Inject
      * @var LinkingService
      */
     protected $linkingService;
@@ -61,6 +69,12 @@ class ContentNodeCrawler
      * @var RouterInterface
      */
     protected $router;
+
+    /**
+     * @Flow\Inject
+     * @var NodeDataRepository
+     */
+    protected $nodeDataRepository;
 
     /**
      * @throws \Neos\Eel\Exception
@@ -227,14 +241,20 @@ class ContentNodeCrawler
         int $statusCode
     ): void {
         $documentNode = $this->getDocumentNodeOfContentNode($node);
-        $sourceNodeIdentifier = $documentNode->getNodeData()->getIdentifier();
-        $sourceNodePath = $documentNode->getNodeData()->getPath();
+        $nodeData = $documentNode->getNodeData();
+        $sourceNodeIdentifier = $nodeData->getIdentifier();
+        $sourceNodePath = $nodeData->getPath();
 
         $resultItem = new ResultItem();
         $resultItem->setDomain($domain->getHostname());
         $resultItem->setSource($sourceNodeIdentifier);
         $resultItem->setSourcePath($sourceNodePath);
         $resultItem->setTarget($uri);
+
+        if (str_starts_with($uri, 'node://')) {
+            $this->setTargetNodePath($resultItem, $uri);
+        }
+
         $resultItem->setStatusCode($statusCode);
         $resultItem->setCreatedAt($context->getCurrentDateTime());
         $resultItem->setCheckedAt($context->getCurrentDateTime());
@@ -242,8 +262,34 @@ class ContentNodeCrawler
         $this->resultItemStorage->add($resultItem);
     }
 
-    protected function getDocumentNodeOfContentNode(NodeInterface $node): NodeInterface
+    private function getDocumentNodeOfContentNode(NodeInterface $node): NodeInterface
     {
         return FlowQuery::q([$node])->closest('[instanceof Neos.Neos:Document]')->get(0);
+    }
+
+    private function setTargetNodePath(ResultItem $resultItem, string $uri): void
+    {
+        preg_match(LinkingService::PATTERN_SUPPORTED_URIS, $uri, $matches);
+        $nodeIdentifier = $matches[2];
+
+        $baseContext = $this->createContext('live', []);
+        $targetNode = $baseContext->getNodeByIdentifier($nodeIdentifier);
+
+        if (!($targetNode instanceof NodeInterface)) {
+            return;
+        }
+
+        $targetNodePath = $targetNode->getNodeData()->getPath();
+        $resultItem->setTargetPath($targetNodePath);
+    }
+
+    private function createContext(string $workspaceName, array $dimensions): Context
+    {
+        return $this->contextFactory->create([
+            'workspaceName' => $workspaceName,
+            'dimensions' => $dimensions,
+            'invisibleContentShown' => true,
+            'inaccessibleContentShown' => true
+        ]);
     }
 }

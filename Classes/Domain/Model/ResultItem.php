@@ -34,6 +34,17 @@ class ResultItem
     protected string $target;
 
     /**
+     * @var string|null
+     */
+    protected ?string $targetPath = null;
+
+    /**
+     * @var string|null
+     * @Flow\Transient
+     */
+    protected ?string $targetPageTitle = null;
+
+    /**
      * @var integer
      */
     protected int $statusCode;
@@ -55,137 +66,101 @@ class ResultItem
      */
     protected DateTimeInterface $checkedAt;
 
-    /**
-     * @return string
-     */
     public function getDomain(): string
     {
         return $this->domain;
     }
 
-    /**
-     * @param string $domain
-     * @return void
-     */
     public function setDomain(string $domain): void
     {
         $this->domain = $domain;
     }
 
-    /**
-     * @return string|null
-     */
     public function getSource(): ?string
     {
         return $this->source;
     }
 
-    /**
-     * @param string|null $source
-     * @return void
-     */
     public function setSource(?string $source = null): void
     {
         $this->source = $source;
     }
 
-    /**
-     * @return string|null
-     */
     public function getSourcePath(): ?string
     {
         return $this->sourcePath;
     }
 
-    /**
-     * @param string|null $sourcePath
-     * @return void
-     */
     public function setSourcePath(?string $sourcePath = null): void
     {
         $this->sourcePath = $sourcePath;
     }
 
-    /**
-     * @return string
-     */
     public function getTarget(): string
     {
         return $this->target;
     }
 
-    /**
-     * @param string $target
-     * @return void
-     */
     public function setTarget(string $target): void
     {
         $this->target = $target;
     }
 
-    /**
-     * @return integer
-     */
+    public function getTargetPath(): ?string
+    {
+        return $this->targetPath;
+    }
+
+    public function setTargetPath(?string $targetPath): void
+    {
+        $this->targetPath = $targetPath;
+    }
+
+    public function getTargetPageTitle(): ?string
+    {
+        return $this->targetPageTitle;
+    }
+
+    public function setTargetPageTitle(?string $targetPageTitle): void
+    {
+        $this->targetPageTitle = $targetPageTitle;
+    }
+
     public function getStatusCode(): int
     {
         return $this->statusCode;
     }
 
-    /**
-     * @param integer $statusCode
-     * @return void
-     */
     public function setStatusCode(int $statusCode): void
     {
         $this->statusCode = $statusCode;
     }
 
-    /**
-     * @return boolean
-     */
     public function getIgnore(): bool
     {
         return $this->ignore;
     }
 
-    /**
-     * @param boolean $ignore
-     * @return void
-     */
     public function setIgnore(bool $ignore): void
     {
         $this->ignore = $ignore;
     }
 
-    /**
-     * @return DateTimeInterface
-     */
     public function getCreatedAt(): DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    /**
-     * @param DateTimeInterface $createdAt
-     * @return void
-     */
     public function setCreatedAt(DateTimeInterface $createdAt): void
     {
         $this->createdAt = $createdAt;
     }
 
-    /**
-     * @return DateTimeInterface
-     */
     public function getCheckedAt(): DateTimeInterface
     {
         return $this->checkedAt;
     }
 
-    /**
-     * @param DateTimeInterface $checkedAt
-     * @return void
-     */
     public function setCheckedAt(DateTimeInterface $checkedAt): void
     {
         $this->checkedAt = $checkedAt;

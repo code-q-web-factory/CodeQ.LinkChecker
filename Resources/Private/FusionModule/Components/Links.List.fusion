@@ -45,7 +45,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
         }
     }
 
-    linkToEditNode = Sitegeist.FusionLinkPrototypes:ActionUri {
+    sourceLinkToEditNode = Sitegeist.FusionLinkPrototypes:ActionUri {
         package = 'Neos.Neos.Ui'
         controller = 'Backend'
         action = 'index'
@@ -76,31 +76,22 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
         }
     }
 
-    target = Neos.Fusion:Case {
+    targetLinkToEditNode = Neos.Fusion:Case {
         isNode {
             condition = ${String.startsWith(link.target, 'node://')}
 
             renderer = Sitegeist.FusionLinkPrototypes:ActionUri {
-                package = 'Neos.Neos'
-                controller = 'Frontend\\Node'
-                action = 'show'
-                arguments.node = ${link.sourcePath}
+                package = 'Neos.Neos.Ui'
+                controller = 'Backend'
+                action = 'index'
+                arguments.node = ${link.targetPath + '@' + Neos.Ui.Workspace.getPersonalWorkspace()['name']}
             }
-        }
-
-        isResource {
-            // tbd
         }
 
         isExternal {
             condition = ${String.startsWith(link.target, 'http')}
 
             renderer = ${link.target}
-        }
-
-        fallback {
-            condition = ${true}
-            renderer = '#'
         }
     }
 
@@ -118,7 +109,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
             <td>{link.domain}</td>
             <td>
                 {props.sourcePath}
-                <a @if={String.startsWith(link.sourcePath, '/sites')} href={props.linkToEditNode} target="_blank" class="neos-button neos-button--small">
+                <a @if={String.startsWith(link.sourcePath, '/sites')} href={props.sourceLinkToEditNode} target="_blank" class="neos-button neos-button--small">
                     <i class="fas fa-edit"></i>
                 </a>
                 <a href={props.frontendUrl} target="_blank" class="neos-button neos-button--small">
@@ -126,7 +117,8 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
                 </a>
             </td>
             <td>
-                <a href={props.target} target="_blank" class="neos-button target-page-button">{link.target} <i class="fas fa-external-link-alt"></i></a>
+                <a @if.has={props.targetLinkToEditNode} href={props.targetLinkToEditNode} target="_blank" class="neos-button target-page-button">{link.targetPageTitle} <i class="fas fa-external-link-alt"></i></a>
+                <span @if.hasNot={props.targetLinkToEditNode ? false : true}>{link.target}</span>
             </td>
             <td>{I18n.translate('CodeQ.LinkChecker:Modules:error.' + link.statusCode)}</td>
             <td>{Date.format(link.checkedAt, 'd.m.Y H:i')}</td>

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CodeQ\LinkChecker\Controller\Backend;
 
+use CodeQ\LinkChecker\Domain\Actions\SetPageTitleForResultItemAction;
 use CodeQ\LinkChecker\Domain\Crawler\ContentNodeCrawler;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Service\DomainService;
 use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
-use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
+use Neos\ContentRepository\Exception\NodeException;
 use Neos\Error\Messages\Message;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\I18n\Exception\IndexOutOfBoundsException;
@@ -63,20 +64,31 @@ class ModuleController extends AbstractModuleController
 
     /**
      * @Flow\Inject
-     * @var ContextFactoryInterface
-     */
-    protected $contextFactory;
-
-    /**
-     * @Flow\Inject
      * @var ContentNodeCrawler
      */
     protected $contentNodeCrawler;
 
+    /**
+     * @Flow\Inject
+     * @var SetPageTitleForResultItemAction
+     */
+    protected $setPageTitleForResultItemAction;
+
+    /**
+     * @throws NodeException
+     */
     public function indexAction(): void
     {
         $resultItems = $this->resultItemStorage->findAll();
         $flashMessages = $this->controllerContext->getFlashMessageContainer()->getMessagesAndFlush();
+
+        $resultItems = array_map(function (ResultItem $resultItem) {
+            $target = $resultItem->getTarget();
+            if (str_starts_with($target, 'node://')) {
+                $this->setPageTitleForResultItemAction->execute($resultItem, $target);
+            }
+            return $resultItem;
+        }, $resultItems->toArray());
 
         $this->view->assignMultiple([
             'links' => $resultItems,
