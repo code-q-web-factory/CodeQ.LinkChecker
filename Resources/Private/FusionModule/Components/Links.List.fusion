@@ -118,7 +118,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
             </td>
             <td>
                 <a @if.has={props.targetLinkToEditNode} href={props.targetLinkToEditNode} target="_blank" class="neos-button target-page-button">{link.targetPageTitle} <i class="fas fa-external-link-alt"></i></a>
-                <span @if.hasNot={props.targetLinkToEditNode ? false : true}>{link.target}</span>
+                <span @if.else={!props.targetLinkToEditNode}>{link.target}</span>
             </td>
             <td>{I18n.translate('CodeQ.LinkChecker:Modules:error.' + link.statusCode)}</td>
             <td>{Date.format(link.checkedAt, 'd.m.Y H:i')}</td>
