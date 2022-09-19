@@ -1,0 +1,11 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3Fluid/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<h2>Link check summary:</h2>
+
+<ul>
+  <f:for as="resultItem" each="{result}">
+    <li>Crawled {resultItem.amount} url(s) with status code {resultItem.statusCode}</li>
+  </f:for>
+</ul>
+
+<p>You can find more details in the LinkChecker in the attached CSV report file.</p>
+</html>

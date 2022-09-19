@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file original="" product-name="CodeQ.LinkChecker" source-language="en" datatype="plaintext">
+    <file original="" product-name="CodeQ.LinkChecker" source-language="de" datatype="plaintext">
         <body>
             <trans-unit id="module.label">
-                <source>Link Checker</source>
+                <source>Link Überprüfung</source>
             </trans-unit>
             <trans-unit id="module.description">
-                <source>This module lists broken links.</source>
+                <source>Dieses Module listet fehlerhafte Links auf.</source>
             </trans-unit>
 
             <trans-unit id="pagination.position">
-                <source>Showing {0}-{1} of {2}</source>
+                <source>Zeige {0}-{1} von {2}</source>
             </trans-unit>
 
             <trans-unit id="list.action.delete">
-                <source>Delete</source>
+                <source>Als erledigt markieren</source>
             </trans-unit>
             <trans-unit id="list.action.ignore">
-                <source>Ignore this error</source>
+                <source>Fehler ignorieren</source>
             </trans-unit>
 
             <trans-unit id="domain">
-                <source>Domain</source>
+                <source>Ursprungsdomäne</source>
             </trans-unit>
             <trans-unit id="source">
-                <source>Source</source>
+                <source>Quellpfad</source>
             </trans-unit>
             <trans-unit id="targetUriPath">
-                <source>Target uri or path</source>
+                <source>Ziel-Url oder Pfad</source>
             </trans-unit>
             <trans-unit id="error">
-                <source>Error</source>
+                <source>Fehler</source>
             </trans-unit>
             <trans-unit id="error.0">
                 <source>Timeout (0)</source>
@@ -84,15 +84,15 @@
                 <source>Datenvolumen überschritten (509)</source>
             </trans-unit>
             <trans-unit id="foundAt">
-                <source>Found at</source>
+                <source>Gefunden am</source>
             </trans-unit>
 
             <trans-unit id="action.run">
-                <source>Start check again</source>
+                <source>Neue Überprüfung ausführen</source>
             </trans-unit>
 
             <trans-unit id="list.empty">
-                <source>There are currently no invalid links.</source>
+                <source>Es gibt keine fehlerhaften Links.</source>
             </trans-unit>
 
             <trans-unit id="noDomainsFound">

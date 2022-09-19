@@ -4,7 +4,13 @@
     "type": "neos-package",
     "license": "GPL-3.0-or-later",
     "require": {
-        "neos/neos": "^4.3 || 5 - 8 || dev-master"
+        "league/csv": "^9.1",
+        "neos/neos": "^4.3 || 5 - 8 || dev-master",
+        "neos/swiftmailer": "^7.3.0",
+        "psr/log": "^1.1 || ^2.0 || ^3.0",
+        "sitegeist/fusionlinkprototypes": "^1.0",
+        "spatie/crawler": "^4.1",
+        "symfony/polyfill-php80": "^1.16"
     },
     "autoload": {
         "psr-4": {
@@ -14,6 +20,27 @@
     "extra": {
         "neos": {
             "package-key": "CodeQ.LinkChecker"
-        }
+        },
+        "applied-flow-migrations": [
+            "TYPO3.Form-20160601101500",
+            "Neos.Twitter.Bootstrap-20161124204912",
+            "Neos.Form-20161124205254",
+            "Neos.Party-20161124225257",
+            "Neos.Setup-20161124230842",
+            "Neos.Imagine-20161124231742",
+            "Neos.Setup-20161125014759",
+            "Neos.SwiftMailer-20161130105617",
+            "Neos.Seo-20170127154600",
+            "Neos.Flow-20180415105700",
+            "Neos.Neos-20180907103800",
+            "Neos.Neos.Ui-20190319094900",
+            "Neos.Flow-20190425144900",
+            "Neos.Flow-20190515215000",
+            "Neos.Flow-20200813181400",
+            "Neos.Flow-20201003165200",
+            "Neos.Flow-20201109224100",
+            "Neos.Flow-20201205172733",
+            "Neos.Flow-20201207104500"
+        ]
     }
 }
