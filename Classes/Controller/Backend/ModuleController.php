@@ -9,6 +9,7 @@ use CodeQ\LinkChecker\Domain\Crawler\ContentNodeCrawler;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Service\DomainService;
 use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
+use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\ContentRepository\Exception\NodeException;
 use Neos\Error\Messages\Message;
 use Neos\Flow\Annotations as Flow;
@@ -72,6 +73,12 @@ class ModuleController extends AbstractModuleController
      * @Flow\Inject
      */
     protected $setPageTitleForResultItemAction;
+
+    /**
+     * @var ContextFactoryInterface
+     * @Flow\Inject
+     */
+    protected $contextFactory;
 
     /**
      * @throws NodeException
