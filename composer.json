@@ -4,12 +4,13 @@
     "type": "neos-package",
     "license": "GPL-3.0-or-later",
     "require": {
+        "php": "^7.4 || ^8.0",
         "league/csv": "^9.1",
         "neos/neos": "^4.3 || 5 - 8 || dev-master",
         "neos/swiftmailer": "^7.3.0",
         "psr/log": "^1.1 || ^2.0 || ^3.0",
         "sitegeist/fusionlinkprototypes": "^1.0",
-        "spatie/crawler": "^4.1",
+        "spatie/crawler": "^6.0",
         "symfony/polyfill-php80": "^1.16"
     },
     "autoload": {

@@ -10,10 +10,10 @@ use CodeQ\LinkChecker\Service\UriService;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\ConsoleOutput;
 use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
-use Spatie\Crawler\CrawlObserver;
 use Psr\Http\Message\UriInterface;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
+use Spatie\Crawler\CrawlObservers\CrawlObserver;
 
 abstract class BaseReporter extends CrawlObserver
 {
