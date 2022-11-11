@@ -115,8 +115,8 @@ abstract class BaseReporter extends CrawlObserver
 
         $linkCheckItem = new ResultItem();
         $linkCheckItem->setDomain($parts['host']);
-        $linkCheckItem->setSourcePath(UriService::uriToString($originUrl));
-        $linkCheckItem->setTarget(UriService::uriToString($crawlingUrl));
+        $linkCheckItem->setSourcePath((string)$originUrl);
+        $linkCheckItem->setTarget((string)$crawlingUrl);
         $linkCheckItem->setStatusCode($statusCode);
         $linkCheckItem->setCreatedAt(new \DateTime());
         $linkCheckItem->setCheckedAt(new \DateTime());
