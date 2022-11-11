@@ -13,6 +13,7 @@ use GuzzleHttp\RequestOptions;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\CommandController;
+use Neos\Flow\Http\BaseUriProvider;
 use Neos\Flow\I18n\Translator;
 use Neos\Flow\Mvc\Exception\InvalidActionNameException;
 use Neos\Flow\Mvc\Exception\InvalidArgumentNameException;
@@ -23,6 +24,7 @@ use Neos\Flow\ObjectManagement\Exception\UnresolvedDependenciesException;
 use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
 use Neos\Flow\Persistence\Exception\InvalidQueryException;
 use Neos\Neos\Domain\Model\Domain;
+use Neos\Utility\ObjectAccess;
 use Spatie\Crawler\Crawler;
 
 /**
@@ -62,6 +64,12 @@ class CheckLinksCommandController extends CommandController
      * @Flow\InjectConfiguration(path="notifications.service")
      */
     protected $notificationServiceClass;
+
+    /**
+     * @var BaseUriProvider
+     * @Flow\Inject(lazy=false)
+     */
+    protected $baseUriProvider;
 
     protected array $settings;
 
@@ -257,8 +265,16 @@ class CheckLinksCommandController extends CommandController
         }
 
         foreach ($domainsToCrawl as $domainToCrawl) {
+            $currentBaseUri = $domainToCrawl->getScheme() . '://' . $domainToCrawl->getHostname() . ($domainToCrawl->getPort() !== null ? ':' . $domainToCrawl->getPort() : '');
+            $this->hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton($currentBaseUri);
             $this->crawlDomain($domainToCrawl);
         }
+    }
+
+    private function hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton(string $baseUri): void
+    {
+        assert($this->baseUriProvider instanceof BaseUriProvider);
+        ObjectAccess::setProperty($this->baseUriProvider, "configuredBaseUri", $baseUri, true);
     }
 
     /**
