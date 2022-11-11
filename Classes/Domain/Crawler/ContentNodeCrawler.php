@@ -91,7 +91,8 @@ class ContentNodeCrawler
      */
     public function crawl(Context $context, Domain $domain): array
     {
-        $allContentNodes = (new FlowQuery([$context->getCurrentSiteNode()]))->find('[instanceof Neos.Neos:Content]')->get();
+        // Todo optimize via sql or repository
+        $allContentNodes = FlowQuery::q([$context->getCurrentSiteNode()])->find('[instanceof Neos.Neos:Node]')->get();
 
         $messages = [];
 
