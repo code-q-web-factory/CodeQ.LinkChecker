@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CodeQ\LinkChecker\Domain\Crawler;
 
+use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
 use CodeQ\LinkChecker\Infrastructure\ControllerContextFactory;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
-use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
 use GuzzleHttp\Psr7\ServerRequest;
 use Neos\ContentRepository\Domain\Model\Node;
 use Neos\ContentRepository\Domain\Model\NodeInterface;
@@ -41,10 +41,10 @@ class ContentNodeCrawler
     protected const PATTERN_SUPPORTED_PHONE_NUMBERS = '/href="(tel):(\+?\d*)/';
 
     /**
-     * @var ResultItemStorage
+     * @var ResultItemRepositoryInterface
      * @Flow\Inject
      */
-    protected $resultItemStorage;
+    protected $resultItemRepository;
 
     /**
      * @var ControllerContextFactory
@@ -259,7 +259,7 @@ class ContentNodeCrawler
         $resultItem->setCreatedAt($context->getCurrentDateTime());
         $resultItem->setCheckedAt($context->getCurrentDateTime());
 
-        $this->resultItemStorage->add($resultItem);
+        $this->resultItemRepository->add($resultItem);
     }
 
     private function getDocumentNodeOfContentNode(NodeInterface $node): NodeInterface
