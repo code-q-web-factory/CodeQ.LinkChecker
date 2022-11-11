@@ -1,8 +1,9 @@
 <?php
 
-namespace CodeQ\LinkChecker\Service;
+namespace CodeQ\LinkChecker\Infrastructure;
 
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
+use CodeQ\LinkChecker\Domain\Notification\NotificationServiceInterface;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use Neos\Flow\Annotations as Flow;

@@ -6,7 +6,7 @@ namespace CodeQ\LinkChecker\Reporter;
 
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
-use CodeQ\LinkChecker\Service\UriService;
+use CodeQ\LinkChecker\Infrastructure\UriService;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\ConsoleOutput;
 use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;

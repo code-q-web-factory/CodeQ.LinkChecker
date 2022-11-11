@@ -15,7 +15,7 @@ CodeQ:
 
     notifications:
       enabled: true
-      service: 'CodeQ\LinkChecker\Service\EmailService'
+      service: CodeQ\LinkChecker\Infrastructure\EmailService
       subject: 'Link checker results'
       minimumStatusCode: 300
       mail:
@@ -57,7 +57,7 @@ Neos:
             label: 'CodeQ.LinkChecker:Modules:module.label'
             description: 'CodeQ.LinkChecker:Modules:module.description'
             icon: 'fas fa-link'
-            controller: \CodeQ\LinkChecker\Controller\Backend\ModuleController
+            controller: CodeQ\LinkChecker\Controller\Backend\ModuleController
             resource: 'CodeQ.LinkChecker:Backend.Module'
             privilegeTarget: 'CodeQ.LinkChecker:Backend.Module'
             additionalResources:

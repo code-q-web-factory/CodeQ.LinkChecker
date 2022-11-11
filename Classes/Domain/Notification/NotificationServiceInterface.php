@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeQ\LinkChecker\Service;
+namespace CodeQ\LinkChecker\Domain\Notification;
 
 interface NotificationServiceInterface
 {
