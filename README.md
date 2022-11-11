@@ -9,12 +9,12 @@ The link checker has the following methods to find broken links:
 
  - The backend module can validate all internal page links `node://XXX` and assets `asset://XXX` in all node properties
    - Additionally, it validates phone numbers to be in international format (`+99 999999999`)
- - The command controller `./flow linkchecker:crawl` will crawl all in the settings configured domains and pages and check the following:
+ - The command controller `./flow checklinks:crawl` will crawl all in the settings configured domains and pages and check the following:
    - Do all internal links `node://XXX` point to visible pages (not hidden, not hidden via visible before or visible after)
    - Are all phone numbers in international format (`+99 999999999`)
    - Do external links point to valid pages (http status code 2xx)
- - The command controller `./flow linkchecker:crawlnodes` will only validate internal links, assets and phone numbers
- - The command controller `./flow linkchecker:crawlexternallinks` will crawl the website and validate external links
+ - The command controller `./flow checklinks:crawlnodes` will only validate internal links, assets and phone numbers
+ - The command controller `./flow checklinks:crawlexternallinks` will crawl the website and validate external links
 
 ## Installation
 
@@ -31,16 +31,11 @@ CodeQ:
     # how many concurrent requests should the command controller perform
     # If set too high, you will DDoS your server
     concurrency: 10
-    pagesToCrawl:
-      - https://neos.io
-      - https://codeq.at
-      - https://example.org
-      - https://example.org/a-nowhere-linked-page-to-also-check
 ```
 
 Make sure the domains are also added in the "Sites Management"!
 
-Setup a cronjob e.g. daily to execute `./flow linkchecker:crawl`
+Setup a cronjob e.g. daily to execute `./flow checklinks:crawl`
 
 ### Email reports
 
