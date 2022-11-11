@@ -88,7 +88,7 @@
             </trans-unit>
 
             <trans-unit id="action.run">
-                <source>Start check again</source>
+                <source>Check again and reset</source>
             </trans-unit>
 
             <trans-unit id="list.empty">
@@ -96,7 +96,7 @@
             </trans-unit>
 
             <trans-unit id="noDomainsFound">
-                <source>Es wurden keine passenden Domains in den Websites gefunden.</source>
+                <source>Es wurden keine Domains gefunden.</source>
             </trans-unit>
 
             <group id="errorsFound" restype="x-gettext-plurals">
