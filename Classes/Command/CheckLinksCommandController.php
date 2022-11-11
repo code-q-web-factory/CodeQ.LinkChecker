@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CodeQ\LinkChecker\Command;
 
 use CodeQ\LinkChecker\Domain\Crawler\ContentNodeCrawler;
-use CodeQ\LinkChecker\Domain\Service\DomainService;
 use CodeQ\LinkChecker\Infrastructure\UriFactory;
 use CodeQ\LinkChecker\Profile\CheckAllLinks;
 use CodeQ\LinkChecker\Reporter\LogBrokenLinks;
@@ -25,6 +24,7 @@ use Neos\Flow\ObjectManagement\Exception\UnresolvedDependenciesException;
 use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
 use Neos\Flow\Persistence\Exception\InvalidQueryException;
 use Neos\Neos\Domain\Model\Domain;
+use Neos\Neos\Domain\Repository\DomainRepository;
 use Neos\Utility\ObjectAccess;
 use Psr\Http\Message\UriInterface;
 use Spatie\Crawler\Crawler;
@@ -44,10 +44,10 @@ class CheckLinksCommandController extends CommandController
     protected $translator;
 
     /**
-     * @var DomainService
+     * @var DomainRepository
      * @Flow\Inject
      */
-    protected $domainService;
+    protected $domainRepository;
 
     /**
      * @var ContextFactoryInterface
@@ -144,12 +144,20 @@ class CheckLinksCommandController extends CommandController
             $crawler->ignoreRobots();
         }
 
-        /** @var non-empty-string[] $urlsToCrawl */
-        $urlsToCrawl = $this->settings['urlsToCrawl'];
+        $domainsToCrawl = $this->domainRepository->findAll()->toArray();
 
-        foreach ($urlsToCrawl as $url) {
+        if (count($domainsToCrawl) === 0) {
+            $message = $this->translator->translatebyid('noDomainsFound', [], null, null, 'Modules', 'CodeQ.LinkChecker');
+            $this->output->outputFormatted('<error>' . $message . '</error>');
+            return;
+        }
+
+        foreach ($domainsToCrawl as $domainToCrawl) {
+
+            $url = $this->uriFactory->createFromDomain($domainToCrawl);
+
             try {
-                $this->outputLine("Start scanning {$url}");
+                $this->outputLine("Start scanning $url");
                 $this->outputLine('');
 
                 $crawler->startCrawling($url);
@@ -280,14 +288,12 @@ class CheckLinksCommandController extends CommandController
      */
     public function crawlNodesCommand(): void
     {
-        /** @var non-empty-string[] $urlsToCrawl */
-        $urlsToCrawl = $this->settings['urlsToCrawl'];
-
-        $domainsToCrawl = $this->domainService->getDomainsToCrawl($urlsToCrawl);
+        $domainsToCrawl = $this->domainRepository->findAll()->toArray();
 
         if (count($domainsToCrawl) === 0) {
             $message = $this->translator->translatebyid('noDomainsFound', [], null, null, 'Modules', 'CodeQ.LinkChecker');
             $this->output->outputFormatted('<error>' . $message . '</error>');
+            return;
         }
 
         foreach ($domainsToCrawl as $domainToCrawl) {

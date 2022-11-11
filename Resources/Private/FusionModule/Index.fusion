@@ -3,4 +3,17 @@ CodeQ.LinkChecker.Backend.ModuleController {
         <CodeQ.LinkChecker:Component.FlashMessages flashMessages={flashMessages}/>
         <CodeQ.LinkChecker:Backend.Module.Index links={links}/>
     `
+
+    run = afx`
+        <CodeQ.LinkChecker:Component.FlashMessages flashMessages={flashMessages}/>
+        Crawling was started go back to the link checker to see the results.
+        <div style="padding-top: 1rem">
+            <Sitegeist.FusionLinkPrototypes:ModuleLink
+                content="Back"
+                attributes.class="neos-button"
+                module='management/link-checker'
+                action='index'
+            />
+        </div>
+    `
 }

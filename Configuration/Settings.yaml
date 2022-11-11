@@ -42,8 +42,6 @@ CodeQ:
           errors: log
           success: log
 
-    urlsToCrawl:
-
 Neos:
   Neos:
     userInterface:
