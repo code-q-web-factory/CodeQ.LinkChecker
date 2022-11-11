@@ -2,16 +2,16 @@ prototype(CodeQ.LinkChecker:Component.Links.List) < prototype(Neos.Fusion:Compon
     links = '[]'
 
     renderer = afx`
-        <table class="neos-table codeq-link-checker-table">
+        <table data-sort-table class="neos-table codeq-link-checker-table">
             <thead>
-            <tr>
-                <th>{I18n.translate('CodeQ.LinkChecker:Modules:domain')}</th>
-                <th>{I18n.translate('CodeQ.LinkChecker:Modules:source')} <i class="fas fa-sort-amount-down"></i></th>
-                <th>{I18n.translate('CodeQ.LinkChecker:Modules:targetUriPath')}</th>
-                <th>{I18n.translate('CodeQ.LinkChecker:Modules:error')}</th>
-                <th>{I18n.translate('CodeQ.LinkChecker:Modules:foundAt')}</th>
-                <th></th>
-            </tr>
+                <tr>
+                    <th data-sort-column>{I18n.translate('CodeQ.LinkChecker:Modules:domain')}</th>
+                    <th data-sort-column>{I18n.translate('CodeQ.LinkChecker:Modules:source')}</th>
+                    <th>{I18n.translate('CodeQ.LinkChecker:Modules:targetUriPath')}</th>
+                    <th>{I18n.translate('CodeQ.LinkChecker:Modules:error')}</th>
+                    <th>{I18n.translate('CodeQ.LinkChecker:Modules:foundAt')}</th>
+                    <th></th>
+                </tr>
             </thead>
             <tbody>
             <Neos.Fusion:Loop items={props.links} itemName="link">
@@ -19,6 +19,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List) < prototype(Neos.Fusion:Compon
             </Neos.Fusion:Loop>
             </tbody>
         </table>
+        <script>{StaticResource.content("CodeQ.LinkChecker", "Private/FusionModule/Components/Links.List.js")}</script>
     `
 }
 
