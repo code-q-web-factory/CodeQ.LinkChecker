@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CodeQ\LinkChecker\Reporter;
 
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
-use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
+use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
 use CodeQ\LinkChecker\Infrastructure\UriService;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\ConsoleOutput;
@@ -18,10 +18,10 @@ use Spatie\Crawler\CrawlObservers\CrawlObserver;
 abstract class BaseReporter extends CrawlObserver
 {
     /**
-     * @var ResultItemStorage
+     * @var ResultItemRepositoryInterface
      * @Flow\Inject
      */
-    protected $resultItemStorage;
+    protected $resultItemRepository;
 
     /**
      * @var ConsoleOutput
@@ -122,7 +122,7 @@ abstract class BaseReporter extends CrawlObserver
         $linkCheckItem->setCheckedAt(new \DateTime());
 
         try {
-            $this->resultItemStorage->add($linkCheckItem);
+            $this->resultItemRepository->add($linkCheckItem);
         } catch (IllegalObjectTypeException $e) {
             $this->outputLine("Could not persist entry for the url {$crawlingUrl}");
         }

@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace CodeQ\LinkChecker\Domain\Storage;
+namespace CodeQ\LinkChecker\Infrastructure;
 
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
-use CodeQ\LinkChecker\Domain\Repository\ResultItemRepository;
+use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
 use Neos\Flow\Persistence\QueryInterface;
 use Neos\Flow\Persistence\QueryResultInterface;
+use Neos\Flow\Persistence\Repository;
 
-class ResultItemStorage
+/**
+ * @Flow\Scope("singleton")
+ */
+class ResultItemRepositoryAdapter extends Repository implements ResultItemRepositoryInterface
 {
-    /**
-     * @var ResultItemRepository
-     * @Flow\Inject
-     */
-    protected $resultItemRepository;
+    const ENTITY_CLASSNAME = ResultItem::class;
 
     /**
      * @var EntityManagerInterface
@@ -28,7 +28,7 @@ class ResultItemStorage
 
     public function findAll(): QueryResultInterface
     {
-        $query = $this->resultItemRepository->createQuery();
+        $query = $this->createQuery();
         $query->matching($query->equals('ignore', 0));
         $query->setOrderings(
             [
@@ -38,16 +38,14 @@ class ResultItemStorage
         return $query->execute();
     }
 
-    /**
-     * @throws IllegalObjectTypeException
-     */
-    public function remove(ResultItem $resultItem): void
+    public function remove($resultItem): void
     {
-        $this->resultItemRepository->remove($resultItem);
+        parent::remove($resultItem);
     }
 
     public function truncate(): void
     {
+        // https://neos-project.slack.com/archives/C04V4C6B0/p1668168503014459
         $qB = $this->entityManager->createQueryBuilder()
             ->delete(ResultItem::class);
 
@@ -61,16 +59,15 @@ class ResultItemStorage
     public function ignore(ResultItem $resultItem): void
     {
         $resultItem->setIgnore(true);
-
-        $this->resultItemRepository->update($resultItem);
+        $this->update($resultItem);
     }
 
     /**
      * @throws IllegalObjectTypeException
      */
-    public function add(ResultItem $resultItem): void
+    public function add($resultItem): void
     {
-        $existingResultItem = $this->resultItemRepository->findOneByData([
+        $existingResultItem = $this->findOneByData([
             'domain' => $resultItem->getDomain(),
             'source' => $resultItem->getSource(),
             'target' => $resultItem->getTarget(),
@@ -81,6 +78,19 @@ class ResultItemStorage
             return;
         }
 
-        $this->resultItemRepository->add($resultItem);
+        parent::add($resultItem);
+    }
+
+    private function findOneByData(array $properties = [], $cacheResult = false): ?ResultItem
+    {
+        $query = $this->createQuery();
+        $constraints = [];
+        foreach ($properties as $propertyName => $propertyValue) {
+            $constraints[] = $query->equals($propertyName, $propertyValue);
+        }
+        return $query
+            ->matching($query->logicalAnd($constraints))
+            ->execute($cacheResult)
+            ->getFirst();
     }
 }

@@ -6,7 +6,7 @@ namespace CodeQ\LinkChecker\Controller\Backend;
 
 use CodeQ\LinkChecker\Domain\Actions\SetPageTitleForResultItemAction;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
-use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
+use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\ContentRepository\Exception\NodeException;
 use Neos\Flow\Annotations as Flow;
@@ -49,10 +49,10 @@ class ModuleController extends AbstractModuleController
     protected $translator;
 
     /**
-     * @var ResultItemStorage
+     * @var ResultItemRepositoryInterface
      * @Flow\Inject
      */
-    protected $resultItemStorage;
+    protected $resultItemRepository;
 
     /**
      * @var SetPageTitleForResultItemAction
@@ -77,7 +77,7 @@ class ModuleController extends AbstractModuleController
      */
     public function indexAction(): void
     {
-        $resultItems = $this->resultItemStorage->findAll();
+        $resultItems = $this->resultItemRepository->findAll();
         $flashMessages = $this->controllerContext->getFlashMessageContainer()->getMessagesAndFlush();
 
         $resultItems = array_map(function (ResultItem $resultItem) {
@@ -123,7 +123,7 @@ class ModuleController extends AbstractModuleController
      */
     public function deleteAction(ResultItem $resultItem): void
     {
-        $this->resultItemStorage->remove($resultItem);
+        $this->resultItemRepository->remove($resultItem);
 
         $this->addFlashMessage(sprintf('%s deleted', $resultItem->getSource()));
         $this->redirect('index');
@@ -135,7 +135,7 @@ class ModuleController extends AbstractModuleController
      */
     public function ignoreAction(ResultItem $resultItem): void
     {
-        $this->resultItemStorage->ignore($resultItem);
+        $this->resultItemRepository->ignore($resultItem);
 
         $this->addFlashMessage(sprintf('%s ignored', $resultItem->getSource()));
         $this->redirect('index');
