@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeQ\LinkChecker\Service;
+namespace CodeQ\LinkChecker\Infrastructure;
 
 use Neos\Flow\Annotations as Flow;
 use GuzzleHttp\Psr7\Uri;

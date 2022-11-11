@@ -9,7 +9,7 @@ use CodeQ\LinkChecker\Domain\Service\DomainService;
 use CodeQ\LinkChecker\Infrastructure\UriFactory;
 use CodeQ\LinkChecker\Profile\CheckAllLinks;
 use CodeQ\LinkChecker\Reporter\LogBrokenLinks;
-use CodeQ\LinkChecker\Service\NotificationServiceInterface;
+use CodeQ\LinkChecker\Domain\Notification\NotificationServiceInterface;
 use GuzzleHttp\RequestOptions;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Flow\Annotations as Flow;
@@ -221,7 +221,7 @@ class CheckLinksCommandController extends CommandController
      */
     protected function shouldIgnoreRobots(): bool
     {
-        return !isset($this->settings['ignoreRobots']) || (bool)$this->settings['ignoreRobots'];
+        return !isset($this->settings['ignoreRobots']) || $this->settings['ignoreRobots'];
     }
 
     /**
@@ -242,7 +242,6 @@ class CheckLinksCommandController extends CommandController
             if ($statusCode < (int)$minimumStatusCode) {
                 continue;
             }
-
             $arguments['result'][$statusCode] = [
                 'statusCode' => $statusCode,
                 'urls' => $urls,
@@ -250,8 +249,14 @@ class CheckLinksCommandController extends CommandController
             ];
         }
 
-        /** @var NotificationServiceInterface $notificationService */
         $notificationService = $this->objectManager->get($notificationServiceClass);
+
+        if (!$notificationService instanceof NotificationServiceInterface) {
+            throw new \InvalidArgumentException(
+                "NotificationService $notificationServiceClass, doesnt implement the NotificationServiceInterface",
+                1668164428
+            );
+        }
         $notificationService->sendNotification($this->settings['notifications']['subject'] ?? '', $arguments);
     }
 
