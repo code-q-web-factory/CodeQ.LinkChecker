@@ -1,5 +1,5 @@
 prototype(CodeQ.LinkChecker:Component.Links.List) < prototype(Neos.Fusion:Component) {
-    links = '[]'
+    links = ${[{}]}
 
     renderer = afx`
         <table data-sort-table class="neos-table codeq-link-checker-table">
@@ -24,7 +24,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List) < prototype(Neos.Fusion:Compon
 }
 
 prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:Component) {
-    link = '{}'
+    links = ${{}}
 
     sourcePath = Neos.Fusion:Case {
         isNode {
@@ -77,7 +77,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
         }
     }
 
-    targetLinkToEditNode = Neos.Fusion:Case {
+    targetLinkToEditNodeOrExternalLink = Neos.Fusion:Case {
         isNode {
             condition = ${String.startsWith(link.target, 'node://')}
 
@@ -118,8 +118,13 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
                 </a>
             </td>
             <td>
-                <a @if.has={props.targetLinkToEditNode} href={props.targetLinkToEditNode} target="_blank" class="neos-button target-page-button">{link.targetPageTitle} <i class="fas fa-external-link-alt"></i></a>
-                <span @if.else={!props.targetLinkToEditNode}>{link.target}</span>
+                <Neos.Fusion:Fragment @if.has={props.targetLinkToEditNodeOrExternalLink}>
+                    <span class="target-page-text">{link.targetPageTitle || link.target}</span>
+                    <a href={props.targetLinkToEditNodeOrExternalLink} target="_blank" class="neos-button neos-button--small">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </Neos.Fusion:Fragment>
+                <span @if.not={!props.targetLinkToEditNodeOrExternalLink}>{link.target}</span>
             </td>
             <td>{I18n.translate('CodeQ.LinkChecker:Modules:error.' + link.statusCode)}</td>
             <td>{Date.format(link.checkedAt, 'd.m.Y H:i')}</td>
