@@ -3,5 +3,4 @@
   viewObjectName: 'Neos\Fusion\View\FusionView'
   options:
     fusionPathPatterns:
-      - 'resource://Neos.Fusion/Private/Fusion'
       - 'resource://CodeQ.LinkChecker/Private/FusionModule'
