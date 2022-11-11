@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CodeQ\LinkChecker\Domain\Crawler;
 
-use CodeQ\LinkChecker\Domain\Factory\ControllerContextFactory;
+use CodeQ\LinkChecker\Infrastructure\ControllerContextFactory;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Storage\ResultItemStorage;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -101,7 +101,7 @@ class ContentNodeCrawler
 
             $unresolvedUris = [];
             $invalidPhoneNumbers = [];
-            $controllerContext = $this->controllerContextFactory->create($domain);
+            $controllerContext = $this->controllerContextFactory->createFromDomain($domain);
 
             $properties = $nodeData->getProperties();
 

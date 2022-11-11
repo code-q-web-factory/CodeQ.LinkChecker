@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CodeQ\LinkChecker\Domain\Factory;
+namespace CodeQ\LinkChecker\Infrastructure;
 
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Http\ServerRequestAttributes;
@@ -34,6 +34,12 @@ class UriBuilderFactory
     protected $actionRequestFactory;
 
     /**
+     * @var UriFactory
+     * @Flow\Inject
+     */
+    protected $uriFactory;
+
+    /**
      * @var UriBuilder
      */
     protected $uriBuilder;
@@ -44,19 +50,19 @@ class UriBuilderFactory
      * @throws InvalidArgumentTypeException
      * @throws InvalidControllerNameException
      */
-    public function create(Domain $domain): UriBuilder
+    public function createFromDomain(Domain $domain): UriBuilder
     {
         if ($this->uriBuilder instanceof UriBuilder) {
             return $this->uriBuilder;
         }
 
-        $_SERVER['FLOW_REWRITEURLS'] = 1;
-
         $routeParameters = RouteParameters::createEmpty()
             ->withParameter('requestUriHost', $domain->getHostname());
 
+        $domainUri = $this->uriFactory->createFromDomain($domain);
+
         $fakeHttpRequest = $this->serverRequestFactory
-            ->createServerRequest('GET', $domain->getScheme() . '://' . $domain->getHostname())
+            ->createServerRequest('GET', (string)$domainUri)
             ->withAttribute(ServerRequestAttributes::ROUTING_PARAMETERS, $routeParameters);
 
         $fakeActionRequest = $this->actionRequestFactory->createActionRequest($fakeHttpRequest);

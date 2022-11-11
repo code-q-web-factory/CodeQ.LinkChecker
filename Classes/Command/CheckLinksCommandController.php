@@ -6,6 +6,7 @@ namespace CodeQ\LinkChecker\Command;
 
 use CodeQ\LinkChecker\Domain\Crawler\ContentNodeCrawler;
 use CodeQ\LinkChecker\Domain\Service\DomainService;
+use CodeQ\LinkChecker\Infrastructure\UriFactory;
 use CodeQ\LinkChecker\Profile\CheckAllLinks;
 use CodeQ\LinkChecker\Reporter\LogBrokenLinks;
 use CodeQ\LinkChecker\Service\NotificationServiceInterface;
@@ -25,6 +26,7 @@ use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
 use Neos\Flow\Persistence\Exception\InvalidQueryException;
 use Neos\Neos\Domain\Model\Domain;
 use Neos\Utility\ObjectAccess;
+use Psr\Http\Message\UriInterface;
 use Spatie\Crawler\Crawler;
 
 /**
@@ -60,6 +62,12 @@ class CheckLinksCommandController extends CommandController
     protected $contentNodeCrawler;
 
     /**
+     * @var UriFactory
+     * @Flow\Inject
+     */
+    protected $uriFactory;
+
+    /**
      * @var string
      * @Flow\InjectConfiguration(path="notifications.service")
      */
@@ -81,6 +89,17 @@ class CheckLinksCommandController extends CommandController
         $this->settings = $settings;
     }
 
+    private function legacyHackPrettyUrls(): void
+    {
+        // with Flow 7.1 not needed anymore
+        // see FEATURE: Enable URL Rewriting by default
+        // https://github.com/neos/flow-development-collection/pull/2459
+        // needed for \CodeQ\LinkChecker\Domain\Factory\UriBuilderFactory::create
+        if ($_SERVER['FLOW_REWRITEURLS'] !== '1') {
+            $_SERVER['FLOW_REWRITEURLS'] = '1';
+        }
+    }
+
     /**
      * Crawl for invalid node links and external links
      *
@@ -99,6 +118,8 @@ class CheckLinksCommandController extends CommandController
      */
     public function crawlCommand(): void
     {
+        $this->legacyHackPrettyUrls();
+
         $this->crawlNodesCommand();
         $this->crawlExternalLinksCommand();
     }
@@ -265,16 +286,16 @@ class CheckLinksCommandController extends CommandController
         }
 
         foreach ($domainsToCrawl as $domainToCrawl) {
-            $currentBaseUri = $domainToCrawl->getScheme() . '://' . $domainToCrawl->getHostname() . ($domainToCrawl->getPort() !== null ? ':' . $domainToCrawl->getPort() : '');
-            $this->hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton($currentBaseUri);
+            $baseUriOfDomain = $this->uriFactory->createFromDomain($domainToCrawl);
+            $this->hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton($baseUriOfDomain);
             $this->crawlDomain($domainToCrawl);
         }
     }
 
-    private function hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton(string $baseUri): void
+    private function hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton(UriInterface $baseUri): void
     {
         assert($this->baseUriProvider instanceof BaseUriProvider);
-        ObjectAccess::setProperty($this->baseUriProvider, "configuredBaseUri", $baseUri, true);
+        ObjectAccess::setProperty($this->baseUriProvider, "configuredBaseUri", (string)$baseUri, true);
     }
 
     /**

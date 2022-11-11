@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CodeQ\LinkChecker\Domain\Factory;
+namespace CodeQ\LinkChecker\Infrastructure;
 
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Mvc\ActionResponse;
@@ -34,9 +34,9 @@ class ControllerContextFactory
      * @throws UnresolvedDependenciesException
      * @see https://github.com/neos/flow-development-collection/issues/2084#issuecomment-696567359
      */
-    public function create(Domain $domain): ControllerContext
+    public function createFromDomain(Domain $domain): ControllerContext
     {
-        $uriBuilder = $this->uriBuilderFactory->create($domain);
+        $uriBuilder = $this->uriBuilderFactory->createFromDomain($domain);
         $fakeActionRequest = $uriBuilder->getRequest();
 
         return new ControllerContext(
