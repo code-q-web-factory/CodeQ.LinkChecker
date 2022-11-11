@@ -6,6 +6,8 @@ CodeQ:
     ignoreRobots: false
     excludeStatusCodes: []
 
+    excludeUrls: []
+
     clientOptions:
       cookies: true
       connectionTimeout: 10
@@ -41,26 +43,3 @@ CodeQ:
         logging:
           errors: log
           success: log
-
-Neos:
-  Neos:
-    userInterface:
-      translation:
-        autoInclude:
-          'CodeQ.LinkChecker': ['Modules']
-    modules:
-      management:
-        submodules:
-          link-checker:
-            label: 'CodeQ.LinkChecker:Modules:module.label'
-            description: 'CodeQ.LinkChecker:Modules:module.description'
-            icon: 'fas fa-link'
-            controller: CodeQ\LinkChecker\Controller\Backend\ModuleController
-            resource: 'CodeQ.LinkChecker:Backend.Module'
-            privilegeTarget: 'CodeQ.LinkChecker:Backend.Module'
-            additionalResources:
-              styleSheets:
-                - 'resource://CodeQ.LinkChecker/Public/Styles/link-checker.css'
-    fusion:
-      autoInclude:
-        CodeQ.LinkChecker: true

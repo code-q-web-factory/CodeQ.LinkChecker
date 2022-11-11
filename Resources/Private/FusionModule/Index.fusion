@@ -6,10 +6,10 @@ CodeQ.LinkChecker.Backend.ModuleController {
 
     run = afx`
         <CodeQ.LinkChecker:Component.FlashMessages flashMessages={flashMessages}/>
-        Crawling was started go back to the link checker to see the results.
+        Crawling was started come back later to the link checker to see the results.
         <div style="padding-top: 1rem">
             <Sitegeist.FusionLinkPrototypes:ModuleLink
-                content="Back"
+                content="Back to the overview"
                 attributes.class="neos-button"
                 module='management/link-checker'
                 action='index'

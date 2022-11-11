@@ -6,7 +6,7 @@ namespace CodeQ\LinkChecker\Command;
 
 use CodeQ\LinkChecker\Domain\Crawler\ContentNodeCrawler;
 use CodeQ\LinkChecker\Infrastructure\UriFactory;
-use CodeQ\LinkChecker\Profile\CheckAllLinks;
+use CodeQ\LinkChecker\Profile\CrawlNonExcludedUrls;
 use CodeQ\LinkChecker\Reporter\LogBrokenLinks;
 use CodeQ\LinkChecker\Domain\Notification\NotificationServiceInterface;
 use GuzzleHttp\RequestOptions;
@@ -131,7 +131,7 @@ class CheckLinksCommandController extends CommandController
      */
     public function crawlExternalLinksCommand(): void
     {
-        $crawlProfile = new CheckAllLinks();
+        $crawlProfile = new CrawlNonExcludedUrls();
         $crawlObserver = new LogBrokenLinks();
         $clientOptions = $this->getClientOptions();
 
