@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @Flow\Entity
  */
-class ResultItem
+class ResultItem implements \JsonSerializable
 {
     /**
      * @var string
@@ -164,5 +164,21 @@ class ResultItem
     public function setCheckedAt(DateTimeInterface $checkedAt): void
     {
         $this->checkedAt = $checkedAt;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'domain' => $this->getDomain(),
+            'source' => $this->getSource(),
+            'sourcePath' => $this->getSourcePath(),
+            'target' => $this->getTarget(),
+            'targetPath' => $this->getTargetPath(),
+            'targetPageTitle' => $this->getTargetPageTitle(),
+            'statusCode' => $this->getStatusCode(),
+            'ignore' => $this->getIgnore(),
+            'createdAt' => $this->getCreatedAt()->format('Y-m-d H:i:s'),
+            'checkedAt' => $this->getCheckedAt()->format('Y-m-d H:i:s'),
+        ];
     }
 }
