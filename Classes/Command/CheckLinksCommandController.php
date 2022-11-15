@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CodeQ\LinkChecker\Command;
 
 use CodeQ\LinkChecker\Domain\Crawler\ContentNodeCrawler;
+use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
 use CodeQ\LinkChecker\Infrastructure\UriFactory;
 use CodeQ\LinkChecker\Profile\CrawlNonExcludedUrls;
 use CodeQ\LinkChecker\Reporter\LogBrokenLinks;
@@ -15,14 +16,6 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\CommandController;
 use Neos\Flow\Http\BaseUriProvider;
 use Neos\Flow\I18n\Translator;
-use Neos\Flow\Mvc\Exception\InvalidActionNameException;
-use Neos\Flow\Mvc\Exception\InvalidArgumentNameException;
-use Neos\Flow\Mvc\Exception\InvalidArgumentTypeException;
-use Neos\Flow\Mvc\Exception\InvalidControllerNameException;
-use Neos\Flow\Mvc\Routing\Exception\MissingActionNameException;
-use Neos\Flow\ObjectManagement\Exception\UnresolvedDependenciesException;
-use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
-use Neos\Flow\Persistence\Exception\InvalidQueryException;
 use Neos\Neos\Domain\Model\Domain;
 use Neos\Neos\Domain\Repository\DomainRepository;
 use Neos\Utility\ObjectAccess;
@@ -68,6 +61,12 @@ class CheckLinksCommandController extends CommandController
     protected $uriFactory;
 
     /**
+     * @Flow\Inject
+     * @var ResultItemRepositoryInterface
+     */
+    protected $resultItemRepository;
+
+    /**
      * @var string
      * @Flow\InjectConfiguration(path="notifications.service")
      */
@@ -100,21 +99,14 @@ class CheckLinksCommandController extends CommandController
         }
     }
 
+    public function clearCommand(): void
+    {
+        $this->resultItemRepository->truncate();
+    }
+
     /**
      * Crawl for invalid node links and external links
      *
-     * @throws \Neos\Flow\Security\Exception
-     * @throws UnresolvedDependenciesException
-     * @throws InvalidArgumentTypeException
-     * @throws \Neos\Eel\Exception
-     * @throws \Neos\Flow\Property\Exception
-     * @throws InvalidArgumentNameException
-     * @throws \Neos\Neos\Exception
-     * @throws MissingActionNameException
-     * @throws IllegalObjectTypeException
-     * @throws InvalidActionNameException
-     * @throws InvalidQueryException
-     * @throws InvalidControllerNameException
      */
     public function crawlCommand(): void
     {
@@ -125,9 +117,33 @@ class CheckLinksCommandController extends CommandController
     }
 
     /**
+     * Crawl for invalid links within nodes
+     *
+     * This command crawls an url for invalid internal and external links
+     *
+     */
+    public function crawlNodesCommand(): void
+    {
+        $domainsToCrawl = $this->domainRepository->findAll()->toArray();
+
+        if (count($domainsToCrawl) === 0) {
+            $message = $this->translator->translatebyid('noDomainsFound', [], null, null, 'Modules', 'CodeQ.LinkChecker');
+            $this->output->outputFormatted('<error>' . $message . '</error>');
+            return;
+        }
+
+        foreach ($domainsToCrawl as $domainToCrawl) {
+            $baseUriOfDomain = $this->uriFactory->createFromDomain($domainToCrawl);
+            $this->hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton($baseUriOfDomain);
+            $this->crawlDomain($domainToCrawl);
+        }
+    }
+
+    /**
      * Crawl for invalid external links
      *
      * This command crawls the whole website for invalid external links
+     *
      */
     public function crawlExternalLinksCommand(): void
     {
@@ -175,7 +191,6 @@ class CheckLinksCommandController extends CommandController
      * Get client options for the guzzle client from the settings. If no settings are configured we just set
      * timeout and allow_redirect.
      *
-     * @return array
      */
     protected function getClientOptions(): array
     {
@@ -268,60 +283,12 @@ class CheckLinksCommandController extends CommandController
         $notificationService->sendNotification($this->settings['notifications']['subject'] ?? '', $arguments);
     }
 
-    /**
-     * Crawl for invalid links within nodes
-     *
-     * This command crawls an url for invalid internal and external links
-     *
-     * @throws IllegalObjectTypeException
-     * @throws InvalidActionNameException
-     * @throws InvalidArgumentNameException
-     * @throws InvalidArgumentTypeException
-     * @throws InvalidControllerNameException
-     * @throws InvalidQueryException
-     * @throws MissingActionNameException
-     * @throws UnresolvedDependenciesException
-     * @throws \Neos\Eel\Exception
-     * @throws \Neos\Flow\Property\Exception
-     * @throws \Neos\Flow\Security\Exception
-     * @throws \Neos\Neos\Exception
-     */
-    public function crawlNodesCommand(): void
-    {
-        $domainsToCrawl = $this->domainRepository->findAll()->toArray();
-
-        if (count($domainsToCrawl) === 0) {
-            $message = $this->translator->translatebyid('noDomainsFound', [], null, null, 'Modules', 'CodeQ.LinkChecker');
-            $this->output->outputFormatted('<error>' . $message . '</error>');
-            return;
-        }
-
-        foreach ($domainsToCrawl as $domainToCrawl) {
-            $baseUriOfDomain = $this->uriFactory->createFromDomain($domainToCrawl);
-            $this->hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton($baseUriOfDomain);
-            $this->crawlDomain($domainToCrawl);
-        }
-    }
-
     private function hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton(UriInterface $baseUri): void
     {
         assert($this->baseUriProvider instanceof BaseUriProvider);
         ObjectAccess::setProperty($this->baseUriProvider, "configuredBaseUri", (string)$baseUri, true);
     }
 
-    /**
-     * @throws IllegalObjectTypeException
-     * @throws InvalidActionNameException
-     * @throws InvalidArgumentNameException
-     * @throws InvalidArgumentTypeException
-     * @throws InvalidControllerNameException
-     * @throws MissingActionNameException
-     * @throws UnresolvedDependenciesException
-     * @throws \Neos\Eel\Exception
-     * @throws \Neos\Flow\Property\Exception
-     * @throws \Neos\Flow\Security\Exception
-     * @throws \Neos\Neos\Exception
-     */
     protected function crawlDomain(Domain $domain): void
     {
         $context = $this->contextFactory->create([
