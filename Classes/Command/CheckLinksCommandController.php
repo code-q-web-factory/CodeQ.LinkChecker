@@ -110,8 +110,6 @@ class CheckLinksCommandController extends CommandController
      */
     public function crawlCommand(): void
     {
-        $this->legacyHackPrettyUrls();
-
         $this->crawlNodesCommand();
         $this->crawlExternalLinksCommand();
     }
@@ -124,6 +122,8 @@ class CheckLinksCommandController extends CommandController
      */
     public function crawlNodesCommand(): void
     {
+        $this->legacyHackPrettyUrls();
+
         $domainsToCrawl = $this->domainRepository->findAll()->toArray();
 
         if (count($domainsToCrawl) === 0) {
@@ -147,6 +147,8 @@ class CheckLinksCommandController extends CommandController
      */
     public function crawlExternalLinksCommand(): void
     {
+        $this->legacyHackPrettyUrls();
+
         $crawlProfile = new CrawlNonExcludedUrls();
         $crawlObserver = new LogBrokenLinks();
         $clientOptions = $this->getClientOptions();
