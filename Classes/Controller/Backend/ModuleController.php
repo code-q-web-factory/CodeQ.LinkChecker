@@ -8,22 +8,10 @@ use CodeQ\LinkChecker\Domain\Actions\SetPageTitleForResultItemAction;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
-use Neos\ContentRepository\Exception\NodeException;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Flow\Core\Booting\Scripts;
-use Neos\Flow\I18n\Exception\IndexOutOfBoundsException;
-use Neos\Flow\I18n\Exception\InvalidFormatPlaceholderException;
 use Neos\Flow\I18n\Translator;
-use Neos\Flow\Mvc\Exception\InvalidActionNameException;
-use Neos\Flow\Mvc\Exception\InvalidArgumentNameException;
-use Neos\Flow\Mvc\Exception\InvalidArgumentTypeException;
-use Neos\Flow\Mvc\Exception\InvalidControllerNameException;
-use Neos\Flow\Mvc\Exception\StopActionException;
-use Neos\Flow\Mvc\Routing\Exception\MissingActionNameException;
-use Neos\Flow\ObjectManagement\Exception\UnresolvedDependenciesException;
-use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
-use Neos\Flow\Persistence\Exception\InvalidQueryException;
 use Neos\Fusion\View\FusionView;
 use Neos\Neos\Controller\Module\AbstractModuleController;
 
@@ -32,14 +20,6 @@ use Neos\Neos\Controller\Module\AbstractModuleController;
  */
 class ModuleController extends AbstractModuleController
 {
-    /**
-     * @var FusionView
-     */
-    protected $view;
-
-    /**
-     * @var string
-     */
     protected $defaultViewObjectName = FusionView::class;
 
     /**
@@ -72,9 +52,6 @@ class ModuleController extends AbstractModuleController
      */
     protected $configurationManager;
 
-    /**
-     * @throws NodeException
-     */
     public function indexAction(): void
     {
         $resultItems = $this->resultItemRepository->findAll();
@@ -94,33 +71,12 @@ class ModuleController extends AbstractModuleController
         ]);
     }
 
-    /**
-     * @throws IllegalObjectTypeException
-     * @throws InvalidActionNameException
-     * @throws InvalidArgumentNameException
-     * @throws InvalidArgumentTypeException
-     * @throws InvalidControllerNameException
-     * @throws InvalidQueryException
-     * @throws MissingActionNameException
-     * @throws StopActionException
-     * @throws UnresolvedDependenciesException
-     * @throws \Neos\Eel\Exception
-     * @throws IndexOutOfBoundsException
-     * @throws InvalidFormatPlaceholderException
-     * @throws \Neos\Flow\Property\Exception
-     * @throws \Neos\Flow\Security\Exception
-     * @throws \Neos\Neos\Exception
-     */
     public function runAction(): void
     {
         $settings = $this->configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_SETTINGS, 'Neos.Flow');
         Scripts::executeCommandAsync("codeq.linkchecker:checklinks:crawl", $settings);
     }
 
-    /**
-     * @throws IllegalObjectTypeException
-     * @throws StopActionException
-     */
     public function deleteAction(ResultItem $resultItem): void
     {
         $this->resultItemRepository->remove($resultItem);
@@ -129,10 +85,6 @@ class ModuleController extends AbstractModuleController
         $this->redirect('index');
     }
 
-    /**
-     * @throws IllegalObjectTypeException
-     * @throws StopActionException
-     */
     public function ignoreAction(ResultItem $resultItem): void
     {
         $this->resultItemRepository->ignore($resultItem);
