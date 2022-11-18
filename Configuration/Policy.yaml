@@ -1,20 +1,9 @@
 privilegeTargets:
-  'Neos\Flow\Security\Authorization\Privilege\Method\MethodPrivilege':
-    'CodeQ.LinkChecker:Backend.Module':
-      matcher: 'method(CodeQ\LinkChecker\Controller\Backend\ModuleController->(index|run)Action())'
-
   'Neos\Neos\Security\Authorization\Privilege\ModulePrivilege':
-    'CodeQ.LinkChecker:Backend.Module.Management.LinkChecker':
+    'CodeQ.LinkChecker:Backend.Module':
       matcher: 'management/link-checker'
 
 roles:
-  'Neos.Neos:Administrator':
-    privileges:
-      - privilegeTarget: 'CodeQ.LinkChecker:Backend.Module.Management.LinkChecker'
-        permission: GRANT
-      - privilegeTarget: 'CodeQ.LinkChecker:Backend.Module'
-        permission: GRANT
-
   'Neos.Neos:AbstractEditor':
     privileges:
       -

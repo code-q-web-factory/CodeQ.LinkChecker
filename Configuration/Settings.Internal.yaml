@@ -13,7 +13,6 @@ Neos:
             icon: 'fas fa-link'
             controller: CodeQ\LinkChecker\Controller\Backend\ModuleController
             resource: 'CodeQ.LinkChecker:Backend.Module'
-            privilegeTarget: 'CodeQ.LinkChecker:Backend.Module'
             additionalResources:
               styleSheets:
                 - 'resource://CodeQ.LinkChecker/Public/Styles/link-checker.css'
