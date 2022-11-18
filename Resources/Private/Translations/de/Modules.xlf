@@ -88,7 +88,7 @@
             </trans-unit>
 
             <trans-unit id="action.run">
-                <source>Neu überprüfen</source>
+                <source>Neue überprüfen und zurücksetzen</source>
             </trans-unit>
 
             <trans-unit id="list.empty">
