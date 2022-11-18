@@ -16,17 +16,10 @@ use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Eel\FlowQuery\FlowQuery;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Mvc\Controller\ControllerContext;
-use Neos\Flow\Mvc\Exception\InvalidActionNameException;
-use Neos\Flow\Mvc\Exception\InvalidArgumentNameException;
-use Neos\Flow\Mvc\Exception\InvalidArgumentTypeException;
-use Neos\Flow\Mvc\Exception\InvalidControllerNameException;
 use Neos\Flow\Mvc\Exception\NoMatchingRouteException;
 use Neos\Flow\Mvc\Routing\Dto\RouteContext;
 use Neos\Flow\Mvc\Routing\Dto\RouteParameters;
-use Neos\Flow\Mvc\Routing\Exception\MissingActionNameException;
 use Neos\Flow\Mvc\Routing\RouterInterface;
-use Neos\Flow\ObjectManagement\Exception\UnresolvedDependenciesException;
-use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
 use Neos\Http\Factories\UriFactory;
 use Neos\Neos\Domain\Model\Domain;
 use Neos\Neos\Service\LinkingService;
@@ -76,28 +69,15 @@ class ContentNodeCrawler
      */
     protected $nodeDataRepository;
 
-    /**
-     * @throws \Neos\Eel\Exception
-     * @throws InvalidActionNameException
-     * @throws InvalidArgumentNameException
-     * @throws InvalidArgumentTypeException
-     * @throws InvalidControllerNameException
-     * @throws MissingActionNameException
-     * @throws UnresolvedDependenciesException
-     * @throws IllegalObjectTypeException
-     * @throws \Neos\Flow\Property\Exception
-     * @throws \Neos\Flow\Security\Exception
-     * @throws \Neos\Neos\Exception
-     */
     public function crawl(Context $context, Domain $domain): array
     {
-        // Todo optimize via sql or repository
-        $allContentNodes = FlowQuery::q([$context->getCurrentSiteNode()])->find('[instanceof Neos.Neos:Node]')->get();
+        /** @var Node[] $allContentAndDocumentNodes */
+        $allContentAndDocumentNodes = FlowQuery::q([$context->getCurrentSiteNode()])
+            ->find('[instanceof Neos.Neos:Document][instanceof Neos.Neos:Content]')->get();
 
         $messages = [];
 
-        foreach ($allContentNodes as $node) {
-            /** @var Node $node */
+        foreach ($allContentAndDocumentNodes as $node) {
             $nodeData = $node->getNodeData();
 
             $unresolvedUris = [];
@@ -128,10 +108,6 @@ class ContentNodeCrawler
     }
 
     /**
-     * @throws MissingActionNameException
-     * @throws \Neos\Flow\Property\Exception
-     * @throws \Neos\Flow\Security\Exception
-     * @throws \Neos\Neos\Exception
      * @see \Neos\Neos\Fusion\ConvertUrisImplementation::evaluate
      */
     protected function crawlPropertyForNodesAndAssets(
@@ -241,7 +217,7 @@ class ContentNodeCrawler
         string $uri,
         int $statusCode
     ): void {
-        $documentNode = $this->getDocumentNodeOfContentNode($node);
+        $documentNode = $this->findClosestDocumentNode($node);
         $nodeData = $documentNode->getNodeData();
         $sourceNodeIdentifier = $nodeData->getIdentifier();
         $sourceNodePath = $nodeData->getPath();
@@ -263,9 +239,12 @@ class ContentNodeCrawler
         $this->resultItemRepository->add($resultItem);
     }
 
-    private function getDocumentNodeOfContentNode(NodeInterface $node): NodeInterface
+    private function findClosestDocumentNode(NodeInterface $node): NodeInterface
     {
-        return FlowQuery::q([$node])->closest('[instanceof Neos.Neos:Document]')->get(0);
+        while ($node->getNodeType()->isOfType('Neos.Neos:Document') === false) {
+            $node = $node->getParent();
+        }
+        return $node;
     }
 
     private function setTargetNodePath(ResultItem $resultItem, string $uri): void
