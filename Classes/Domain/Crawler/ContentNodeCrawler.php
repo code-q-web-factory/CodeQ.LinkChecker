@@ -73,7 +73,7 @@ class ContentNodeCrawler
     {
         /** @var Node[] $allContentAndDocumentNodes */
         $allContentAndDocumentNodes = FlowQuery::q([$context->getCurrentSiteNode()])
-            ->find('[instanceof Neos.Neos:Document][instanceof Neos.Neos:Content]')->get();
+            ->find('[instanceof Neos.Neos:Document],[instanceof Neos.Neos:Content]')->get();
 
         $messages = [];
 
