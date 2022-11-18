@@ -73,6 +73,7 @@ class ModuleController extends AbstractModuleController
 
     public function runAction(): void
     {
+        $this->resultItemRepository->truncate();
         $settings = $this->configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_SETTINGS, 'Neos.Flow');
         Scripts::executeCommandAsync("codeq.linkchecker:checklinks:crawl", $settings);
     }
