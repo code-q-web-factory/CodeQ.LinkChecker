@@ -101,10 +101,10 @@
 
             <group id="errorsFound" restype="x-gettext-plurals">
                 <trans-unit id="errorsFound[0]" >
-                    <source>{amountOfErrors} ungültigen Link in der Domäne {domain} gefunden</source>
+                    <source>{0} ungültigen Link gefunden</source>
                 </trans-unit>
                 <trans-unit id="errorsFound[1]" >
-                    <source>{amountOfErrors} ungültige Links in der Domäne {domain} gefunden</source>
+                    <source>{0} ungültige Links gefunden</source>
                 </trans-unit>
             </group>
         </body>

@@ -2,6 +2,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List) < prototype(Neos.Fusion:Compon
     links = ${[{}]}
 
     renderer = afx`
+        <legend>{I18n.id("errorsFound").arguments([Array.length(props.links)]).quantity(Array.length(props.links)).source("Modules").package("CodeQ.LinkChecker").translate()}</legend>
         <table data-sort-table class="neos-table codeq-link-checker-table">
             <thead>
                 <tr>
