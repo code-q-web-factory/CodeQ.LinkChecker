@@ -18,16 +18,20 @@ class LogBrokenLinks extends BaseReporter
         $this->outputLine('Summary:');
         $this->outputLine('--------');
 
-        collect($this->resultItemsGroupedByStatusCode)
-            ->each(function ($urls, $statusCode) {
-                $count = \count($urls);
-                if ($statusCode < 100) {
-                    $this->outputLine("{$count} url(s) did have unresponsive host(s)");
-                    return;
-                }
+        if (count($this->resultItemsGroupedByStatusCode) === 0) {
+            $this->outputLine('No links crawled. Maybe check on your robots index options.');
+            return;
+        }
 
-                $this->outputLine("Crawled {$count} url(s) with status code {$statusCode}");
-            });
+        foreach ($this->resultItemsGroupedByStatusCode as $statusCode => $urls) {
+            $count = \count($urls);
+            if ($statusCode < 100) {
+                $this->outputLine("$count url(s) did have unresponsive host(s)");
+                continue;
+            }
+
+            $this->outputLine("Crawled $count url(s) with status code {$statusCode}");
+        }
     }
 
     /**
