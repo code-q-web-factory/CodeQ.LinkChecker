@@ -19,6 +19,7 @@ use Neos\Flow\Http\BaseUriProvider;
 use Neos\Flow\I18n\Translator;
 use Neos\Neos\Domain\Model\Domain;
 use Neos\Neos\Domain\Repository\DomainRepository;
+use Neos\Neos\Domain\Service\ContentContext;
 use Neos\Utility\ObjectAccess;
 use Psr\Http\Message\UriInterface;
 use Spatie\Crawler\Crawler;
@@ -100,9 +101,18 @@ class CheckLinksCommandController extends CommandController
         }
     }
 
-    public function clearCommand(): void
+    /**
+     * Clear all stored errors
+     *
+     * @param bool $keepIgnored If set, ignored errors will not be deleted
+     */
+    public function clearCommand(bool $keepIgnored = false): void
     {
-        $this->resultItemRepository->truncate();
+        if ($keepIgnored) {
+            $this->resultItemRepository->removeAllNonIgnored();
+        } else {
+            $this->resultItemRepository->truncate();
+        }
     }
 
     /**
@@ -300,12 +310,13 @@ class CheckLinksCommandController extends CommandController
 
     protected function crawlDomain(Domain $domain): void
     {
-        $context = $this->contextFactory->create([
+        /** @var ContentContext $subgraph */
+        $subgraph = $this->contextFactory->create([
             'currentSite' => $domain->getSite(),
             'currentDomain' => $domain,
         ]);
 
-        $messages = $this->contentNodeCrawler->crawl($context, $domain);
+        $messages = $this->contentNodeCrawler->crawl($subgraph, $domain);
 
         foreach ($messages as $message) {
             $this->output->outputFormatted('<error>' . $message . '</error>');
