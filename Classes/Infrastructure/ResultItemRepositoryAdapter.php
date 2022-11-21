@@ -53,6 +53,16 @@ class ResultItemRepositoryAdapter extends Repository implements ResultItemReposi
         $query->execute();
     }
 
+    public function removeAllNonIgnored(): void
+    {
+        $query = $this->createQuery();
+        $query->matching($query->equals('ignore', false));
+        $resultItems = $query->execute();
+        foreach ($resultItems as $resultItem) {
+            $this->remove($resultItem);
+        }
+    }
+
     /**
      * @throws IllegalObjectTypeException
      */

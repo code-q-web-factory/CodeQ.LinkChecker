@@ -12,6 +12,8 @@ interface ResultItemRepositoryInterface
 
     public function truncate(): void;
 
+    public function removeAllNonIgnored(): void;
+
     public function ignore(ResultItem $resultItem): void;
 
     public function add(ResultItem $resultItem): void;
