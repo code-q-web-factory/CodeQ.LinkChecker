@@ -7,10 +7,8 @@ namespace CodeQ\LinkChecker\Domain\Crawler;
 use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use Neos\ContentRepository\Domain\Model\Node;
-use Neos\ContentRepository\Domain\Model\NodeInterface;
 use Neos\ContentRepository\Domain\NodeAggregate\NodeAggregateIdentifier;
 use Neos\ContentRepository\Domain\Repository\NodeDataRepository;
-use Neos\ContentRepository\Domain\Service\Context;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Eel\FlowQuery\FlowQuery;
 use Neos\Flow\Annotations as Flow;
@@ -58,10 +56,10 @@ class ContentNodeCrawler
      */
     protected $nodeDataRepository;
 
-    public function crawl(Context $context, Domain $domain): array
+    public function crawl(ContentContext $subgraph, Domain $domain): array
     {
         /** @var Node[] $allContentAndDocumentNodes */
-        $allContentAndDocumentNodes = FlowQuery::q([$context->getCurrentSiteNode()])
+        $allContentAndDocumentNodes = FlowQuery::q([$subgraph->getCurrentSiteNode()])
             ->find('[instanceof Neos.Neos:Document],[instanceof Neos.Neos:Content]')->get();
 
         $messages = [];
@@ -71,28 +69,27 @@ class ContentNodeCrawler
                 continue;
             }
 
-            $nodeData = $node->getNodeData();
-
             $unresolvedUris = [];
             $invalidPhoneNumbers = [];
 
-            $properties = $nodeData->getProperties();
+            // todo why use nodeData here and not the node?
+            $properties = $node->getNodeData()->getProperties();
 
             foreach ($properties as $property) {
-                $this->crawlPropertyForNodesAndAssets($property, $node->getContext(), $unresolvedUris);
+                $this->crawlPropertyForNodesAndAssets($property, $subgraph, $unresolvedUris);
                 $this->crawlPropertyForTelephoneNumbers($property, $invalidPhoneNumbers);
             }
 
             foreach ($unresolvedUris as $uri) {
                 $messages[] = 'Not found: ' . $uri;
 
-                $this->createResultItem($context, $domain, $node, $uri, 404);
+                $this->createResultItem($subgraph, $domain, $node, $uri, 404);
             }
             foreach ($invalidPhoneNumbers as $phoneNumber) {
                 $messages[] = 'Invalid format: ' . $phoneNumber;
 
                 /* @see https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml - 490 is unassigned, and so we can use it */
-                $this->createResultItem($context, $domain, $node, $phoneNumber, 490);
+                $this->createResultItem($subgraph, $domain, $node, $phoneNumber, 490);
             }
         }
 
@@ -180,35 +177,43 @@ class ContentNodeCrawler
     }
 
     protected function createResultItem(
-        Context $context,
+        ContentContext $subgraph,
         Domain $domain,
-        NodeInterface $node,
+        Node $node,
         string $uri,
         int $statusCode
     ): void {
         $documentNode = $this->findClosestDocumentNode($node);
-        $nodeData = $documentNode->getNodeData();
-        $sourceNodeIdentifier = $nodeData->getIdentifier();
-        $sourceNodePath = $nodeData->getPath();
 
         $resultItem = new ResultItem();
         $resultItem->setDomain($domain->getHostname());
-        $resultItem->setSource($sourceNodeIdentifier);
-        $resultItem->setSourcePath($sourceNodePath);
+        $resultItem->setSource((string)$documentNode->getNodeAggregateIdentifier());
+        $resultItem->setSourcePath((string)$documentNode->findNodePath());
         $resultItem->setTarget($uri);
 
         if (str_starts_with($uri, 'node://')) {
-            $this->setTargetNodePath($resultItem, $uri);
+            $subgraphWithHiddenNodes = $this->subgraphWithConfiguration($subgraph, [
+                'invisibleContentShown' => true,
+                'inaccessibleContentShown' => true
+            ]);
+
+            $targetNodeId = NodeAggregateIdentifier::fromString(
+                str_replace('node://', '', $uri)
+            );
+            $targetNode = $subgraphWithHiddenNodes->getNodeByIdentifier((string)$targetNodeId);
+            if ($targetNode) {
+                $resultItem->setTargetPath((string)$targetNode->findNodePath());
+            }
         }
 
         $resultItem->setStatusCode($statusCode);
-        $resultItem->setCreatedAt($context->getCurrentDateTime());
-        $resultItem->setCheckedAt($context->getCurrentDateTime());
+        $resultItem->setCreatedAt($subgraph->getCurrentDateTime());
+        $resultItem->setCheckedAt($subgraph->getCurrentDateTime());
 
         $this->resultItemRepository->add($resultItem);
     }
 
-    private function findClosestDocumentNode(Node $node): NodeInterface
+    private function findClosestDocumentNode(Node $node): Node
     {
         while ($node->getNodeType()->isOfType('Neos.Neos:Document') === false) {
             $node = $node->findParentNode();
@@ -230,29 +235,11 @@ class ContentNodeCrawler
         } while (true);
     }
 
-    private function setTargetNodePath(ResultItem $resultItem, string $uri): void
+    private function subgraphWithConfiguration(ContentContext $currentSubgraph, array $additionalConfiguration): ContentContext
     {
-        preg_match(LinkingService::PATTERN_SUPPORTED_URIS, $uri, $matches);
-        $nodeIdentifier = $matches[2];
-
-        $baseContext = $this->createContext('live', []);
-        $targetNode = $baseContext->getNodeByIdentifier($nodeIdentifier);
-
-        if (!($targetNode instanceof NodeInterface)) {
-            return;
-        }
-
-        $targetNodePath = $targetNode->getNodeData()->getPath();
-        $resultItem->setTargetPath($targetNodePath);
-    }
-
-    private function createContext(string $workspaceName, array $dimensions): Context
-    {
-        return $this->contextFactory->create([
-            'workspaceName' => $workspaceName,
-            'dimensions' => $dimensions,
-            'invisibleContentShown' => true,
-            'inaccessibleContentShown' => true
-        ]);
+        $currentConfiguration = $currentSubgraph->getProperties();
+        /** @var ContentContext $newSubgraph */
+        $newSubgraph = $this->contextFactory->create(array_merge($currentConfiguration, $additionalConfiguration));
+        return $newSubgraph;
     }
 }

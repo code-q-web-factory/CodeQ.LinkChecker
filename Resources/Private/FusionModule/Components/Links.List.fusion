@@ -88,7 +88,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
 
     targetLinkToEditNodeOrExternalLink = Neos.Fusion:Case {
         isNode {
-            condition = ${String.startsWith(link.target, 'node://')}
+            condition = ${String.startsWith(link.target, 'node://') && link.targetPath}
 
             renderer = Sitegeist.FusionLinkPrototypes:ActionUri {
                 package = 'Neos.Neos.Ui'
