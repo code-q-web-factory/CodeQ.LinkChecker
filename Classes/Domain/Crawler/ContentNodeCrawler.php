@@ -78,6 +78,10 @@ class ContentNodeCrawler
         $messages = [];
 
         foreach ($allContentAndDocumentNodes as $node) {
+            if (!$this->findIsNodeVisible($node)) {
+                continue;
+            }
+
             $nodeData = $node->getNodeData();
 
             $unresolvedUris = [];
@@ -239,12 +243,26 @@ class ContentNodeCrawler
         $this->resultItemRepository->add($resultItem);
     }
 
-    private function findClosestDocumentNode(NodeInterface $node): NodeInterface
+    private function findClosestDocumentNode(Node $node): NodeInterface
     {
         while ($node->getNodeType()->isOfType('Neos.Neos:Document') === false) {
-            $node = $node->getParent();
+            $node = $node->findParentNode();
         }
         return $node;
+    }
+
+    private function findIsNodeVisible(Node $node): bool
+    {
+        do {
+            $previousNode = $node;
+            $node = $node->getParent();
+            if ($node === null) {
+                if ($previousNode->isRoot()) {
+                    return true;
+                }
+                return false;
+            }
+        } while (true);
     }
 
     private function setTargetNodePath(ResultItem $resultItem, string $uri): void
