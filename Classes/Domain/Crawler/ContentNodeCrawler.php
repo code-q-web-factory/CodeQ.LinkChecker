@@ -8,6 +8,7 @@ use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use Neos\ContentRepository\Domain\Model\Node;
 use Neos\ContentRepository\Domain\Model\NodeInterface;
+use Neos\ContentRepository\Domain\NodeAggregate\NodeAggregateIdentifier;
 use Neos\ContentRepository\Domain\Repository\NodeDataRepository;
 use Neos\ContentRepository\Domain\Service\Context;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
@@ -15,6 +16,7 @@ use Neos\Eel\FlowQuery\FlowQuery;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Mvc\Routing\RouterInterface;
 use Neos\Neos\Domain\Model\Domain;
+use Neos\Neos\Domain\Service\ContentContext;
 use Neos\Neos\Service\LinkingService;
 
 class ContentNodeCrawler
@@ -77,7 +79,7 @@ class ContentNodeCrawler
             $properties = $nodeData->getProperties();
 
             foreach ($properties as $property) {
-                $this->crawlPropertyForNodesAndAssets($property, $node, $unresolvedUris);
+                $this->crawlPropertyForNodesAndAssets($property, $node->getContext(), $unresolvedUris);
                 $this->crawlPropertyForTelephoneNumbers($property, $invalidPhoneNumbers);
             }
 
@@ -102,7 +104,7 @@ class ContentNodeCrawler
      */
     protected function crawlPropertyForNodesAndAssets(
         $property,
-        NodeInterface $nodeOfProperty,
+        ContentContext $subgraph,
         array &$unresolvedUris
     ): void {
         if (!is_string($property)) {
@@ -116,7 +118,7 @@ class ContentNodeCrawler
         preg_replace_callback(
             LinkingService::PATTERN_SUPPORTED_URIS,
             function (array $matches) use (
-                $nodeOfProperty,
+                $subgraph,
                 &$unresolvedUris
             ) {
                 $type = $matches[1];
@@ -124,7 +126,10 @@ class ContentNodeCrawler
                 $targetIsVisible = false;
                 switch ($type) {
                     case 'node':
-                        $linkedNode = $nodeOfProperty->getContext()->getNodeByIdentifier($identifier);
+                        $linkedNodeId = NodeAggregateIdentifier::fromString(
+                            str_replace('node://', '', $identifier)
+                        );
+                        $linkedNode = $subgraph->getNodeByIdentifier((string)$linkedNodeId);
                         $targetIsVisible = $linkedNode && $this->findIsNodeVisible($linkedNode);
                         break;
                     case 'asset':
