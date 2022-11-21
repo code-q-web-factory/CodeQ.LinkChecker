@@ -6,7 +6,6 @@ namespace CodeQ\LinkChecker\Reporter;
 
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
-use CodeQ\LinkChecker\Infrastructure\UriService;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\ConsoleOutput;
 use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
@@ -105,6 +104,10 @@ abstract class BaseReporter extends CrawlObserver
 
         if ($statusCode === 200) {
             return;
+        }
+
+        if ($originUrl === null) {
+            throw new OriginUrlException('Origin url is null: ' . $cliMessage, 1668863280);
         }
 
         $parts = parse_url((string)$originUrl);

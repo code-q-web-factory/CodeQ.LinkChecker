@@ -10,6 +10,7 @@ use CodeQ\LinkChecker\Infrastructure\UriFactory;
 use CodeQ\LinkChecker\Profile\CrawlNonExcludedUrls;
 use CodeQ\LinkChecker\Reporter\LogBrokenLinks;
 use CodeQ\LinkChecker\Domain\Notification\NotificationServiceInterface;
+use CodeQ\LinkChecker\Reporter\OriginUrlException;
 use GuzzleHttp\RequestOptions;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Flow\Annotations as Flow;
@@ -178,7 +179,13 @@ class CheckLinksCommandController extends CommandController
                 $this->outputLine("Start scanning $url");
                 $this->outputLine('');
 
-                $crawler->startCrawling($url);
+                try {
+                    $crawler->startCrawling($url);
+                } catch (OriginUrlException $originUrlException) {
+                    $this->outputFormatted("<error>{$originUrlException->getMessage()}</error>");
+                    $this->outputFormatted("<error>The configured site domain $url could not be reached, please check if the URL is correct.</error>");
+                    return;
+                }
 
                 if ($this->settings['notifications']['enabled'] ?? false) {
                     $this->sendNotification($crawlObserver->getResultItemsGroupedByStatusCode());
@@ -303,5 +310,6 @@ class CheckLinksCommandController extends CommandController
         foreach ($messages as $message) {
             $this->output->outputFormatted('<error>' . $message . '</error>');
         }
+        $this->output->outputLine("Problems: " . count($messages));
     }
 }
