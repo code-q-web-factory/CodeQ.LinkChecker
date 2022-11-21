@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace CodeQ\LinkChecker\Domain\Crawler;
 
 use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
-use CodeQ\LinkChecker\Infrastructure\ControllerContextFactory;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
-use GuzzleHttp\Psr7\ServerRequest;
 use Neos\ContentRepository\Domain\Model\Node;
 use Neos\ContentRepository\Domain\Model\NodeInterface;
 use Neos\ContentRepository\Domain\Repository\NodeDataRepository;
@@ -15,12 +13,7 @@ use Neos\ContentRepository\Domain\Service\Context;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Eel\FlowQuery\FlowQuery;
 use Neos\Flow\Annotations as Flow;
-use Neos\Flow\Mvc\Controller\ControllerContext;
-use Neos\Flow\Mvc\Exception\NoMatchingRouteException;
-use Neos\Flow\Mvc\Routing\Dto\RouteContext;
-use Neos\Flow\Mvc\Routing\Dto\RouteParameters;
 use Neos\Flow\Mvc\Routing\RouterInterface;
-use Neos\Http\Factories\UriFactory;
 use Neos\Neos\Domain\Model\Domain;
 use Neos\Neos\Service\LinkingService;
 
@@ -38,12 +31,6 @@ class ContentNodeCrawler
      * @Flow\Inject
      */
     protected $resultItemRepository;
-
-    /**
-     * @var ControllerContextFactory
-     * @Flow\Inject
-     */
-    protected $controllerContextFactory;
 
     /**
      * @var ContextFactoryInterface
@@ -86,12 +73,11 @@ class ContentNodeCrawler
 
             $unresolvedUris = [];
             $invalidPhoneNumbers = [];
-            $controllerContext = $this->controllerContextFactory->createFromDomain($domain);
 
             $properties = $nodeData->getProperties();
 
             foreach ($properties as $property) {
-                $this->crawlPropertyForNodesAndAssets($property, $node, $controllerContext, $unresolvedUris);
+                $this->crawlPropertyForNodesAndAssets($property, $node, $unresolvedUris);
                 $this->crawlPropertyForTelephoneNumbers($property, $invalidPhoneNumbers);
             }
 
@@ -116,8 +102,7 @@ class ContentNodeCrawler
      */
     protected function crawlPropertyForNodesAndAssets(
         $property,
-        NodeInterface $node,
-        ControllerContext $controllerContext,
+        NodeInterface $nodeOfProperty,
         array &$unresolvedUris
     ): void {
         if (!is_string($property)) {
@@ -128,55 +113,30 @@ class ContentNodeCrawler
             return;
         }
 
-        $absolute = true;
-
         preg_replace_callback(
             LinkingService::PATTERN_SUPPORTED_URIS,
             function (array $matches) use (
-                $node,
-                $controllerContext,
-                &$unresolvedUris,
-                $absolute
+                $nodeOfProperty,
+                &$unresolvedUris
             ) {
-                switch ($matches[1]) {
+                $type = $matches[1];
+                $identifier = $matches[0];
+                $targetIsVisible = false;
+                switch ($type) {
                     case 'node':
-                        $resolvedUri = $this->linkingService->resolveNodeUri(
-                            $matches[0],
-                            $node,
-                            $controllerContext,
-                            $absolute
-                        );
-
-                        if ($resolvedUri !== null) {
-                            // Check if uri is reachable or if a parent page is disabled for example
-                            // Same logic as in RoutingMiddleware
-                            $uri = (new UriFactory())->createUri($resolvedUri);
-                            $parameters = RouteParameters::createEmpty()
-                                ->withParameter('requestUriHost', $uri->getHost());
-
-                            $request = new ServerRequest('GET', $uri);
-                            $routeContext = new RouteContext($request, $parameters);
-                            try {
-                                $this->router->route($routeContext);
-                            } catch (NoMatchingRouteException $e) {
-                                $resolvedUri = null;
-                            }
-                        }
-
+                        $linkedNode = $nodeOfProperty->getContext()->getNodeByIdentifier($identifier);
+                        $targetIsVisible = $linkedNode && $this->findIsNodeVisible($linkedNode);
                         break;
                     case 'asset':
-                        $resolvedUri = $this->linkingService->resolveAssetUri($matches[0]);
+                        $targetIsVisible = $this->linkingService->resolveAssetUri($identifier) !== null;
                         break;
-                    default:
-                        $resolvedUri = null;
                 }
 
-                if ($resolvedUri === null) {
-                    $unresolvedUris[] = $matches[0];
-                    return $matches[0];
+                if ($targetIsVisible === false) {
+                    $unresolvedUris[] = $identifier;
                 }
 
-                return $resolvedUri;
+                return "";
             },
             $property
         );
