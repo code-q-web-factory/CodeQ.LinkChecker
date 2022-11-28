@@ -6,6 +6,7 @@ namespace CodeQ\LinkChecker\Command;
 
 use CodeQ\LinkChecker\Domain\Crawler\ContentNodeCrawler;
 use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
+use CodeQ\LinkChecker\Infrastructure\DomainService;
 use CodeQ\LinkChecker\Infrastructure\UriFactory;
 use CodeQ\LinkChecker\Profile\CrawlNonExcludedUrls;
 use CodeQ\LinkChecker\Reporter\LogBrokenLinks;
@@ -18,7 +19,6 @@ use Neos\Flow\Cli\CommandController;
 use Neos\Flow\Http\BaseUriProvider;
 use Neos\Flow\I18n\Translator;
 use Neos\Neos\Domain\Model\Domain;
-use Neos\Neos\Domain\Repository\DomainRepository;
 use Neos\Neos\Domain\Service\ContentContext;
 use Neos\Utility\ObjectAccess;
 use Psr\Http\Message\UriInterface;
@@ -39,10 +39,10 @@ class CheckLinksCommandController extends CommandController
     protected $translator;
 
     /**
-     * @var DomainRepository
+     * @var DomainService
      * @Flow\Inject
      */
-    protected $domainRepository;
+    protected $domainService;
 
     /**
      * @var ContextFactoryInterface
@@ -135,7 +135,7 @@ class CheckLinksCommandController extends CommandController
     {
         $this->legacyHackPrettyUrls();
 
-        $domainsToCrawl = $this->domainRepository->findAll()->toArray();
+        $domainsToCrawl = $this->domainService->findAllSitesPrimaryDomain();
 
         if (count($domainsToCrawl) === 0) {
             $message = $this->translator->translatebyid('noDomainsFound', [], null, null, 'Modules', 'CodeQ.LinkChecker');
@@ -173,7 +173,7 @@ class CheckLinksCommandController extends CommandController
             $crawler->ignoreRobots();
         }
 
-        $domainsToCrawl = $this->domainRepository->findAll()->toArray();
+        $domainsToCrawl = $this->domainService->findAllSitesPrimaryDomain();
 
         if (count($domainsToCrawl) === 0) {
             $message = $this->translator->translatebyid('noDomainsFound', [], null, null, 'Modules', 'CodeQ.LinkChecker');
