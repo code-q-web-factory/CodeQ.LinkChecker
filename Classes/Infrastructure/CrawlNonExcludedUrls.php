@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CodeQ\LinkChecker\Profile;
+namespace CodeQ\LinkChecker\Infrastructure;
 
 use Neos\Flow\Annotations as Flow;
 use Psr\Http\Message\UriInterface;

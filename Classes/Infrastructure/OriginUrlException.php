@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeQ\LinkChecker\Reporter;
+namespace CodeQ\LinkChecker\Infrastructure;
 
 class OriginUrlException extends \Exception
 {
