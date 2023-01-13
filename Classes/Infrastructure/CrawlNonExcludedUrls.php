@@ -20,13 +20,12 @@ class CrawlNonExcludedUrls extends AbstractCrawlProfile
     {
         foreach ($this->excludeUrlRegexPatterns as $excludeUrlRegexPattern) {
             $match = preg_match($excludeUrlRegexPattern, (string)$url);
-            switch ($match) {
-                case 0:
-                    break;
-                case 1:
-                    return false;
-                case false:
-                    throw new \RuntimeException('Invalid regex pattern: ' . $excludeUrlRegexPattern, 1668185080);
+            if ($match === 0) {
+                continue;
+            } elseif ($match === 1) {
+                return false;
+            } elseif ($match === false) {
+                throw new \RuntimeException('Invalid regex pattern: '.$excludeUrlRegexPattern, 1668185080);
             }
         }
         return true;
