@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CodeQ\LinkChecker\Controller\Backend;
 
-use CodeQ\LinkChecker\Domain\Actions\SetPageTitleForResultItemAction;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
+use Neos\ContentRepository\Domain\Model\NodeInterface;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Configuration\ConfigurationManager;
@@ -14,6 +14,7 @@ use Neos\Flow\Core\Booting\Scripts;
 use Neos\Flow\I18n\Translator;
 use Neos\Fusion\View\FusionView;
 use Neos\Neos\Controller\Module\AbstractModuleController;
+use Neos\Neos\Service\LinkingService;
 
 /**
  * @Flow\Scope("singleton")
@@ -35,12 +36,6 @@ class ModuleController extends AbstractModuleController
     protected $resultItemRepository;
 
     /**
-     * @var SetPageTitleForResultItemAction
-     * @Flow\Inject
-     */
-    protected $setPageTitleForResultItemAction;
-
-    /**
      * @var ContextFactoryInterface
      * @Flow\Inject
      */
@@ -60,7 +55,7 @@ class ModuleController extends AbstractModuleController
         $resultItems = array_map(function (ResultItem $resultItem) {
             $target = $resultItem->getTarget();
             if (str_starts_with($target, 'node://')) {
-                $this->setPageTitleForResultItemAction->execute($resultItem, $target);
+                $this->injectPageTitleInResultItem($resultItem, $target);
             }
             return $resultItem;
         }, $resultItems->toArray());
@@ -92,5 +87,24 @@ class ModuleController extends AbstractModuleController
 
         $this->addFlashMessage(sprintf('%s ignored', $resultItem->getSource()));
         $this->redirect('index');
+    }
+
+    private function injectPageTitleInResultItem(ResultItem $resultItem, string $target): void
+    {
+        preg_match(LinkingService::PATTERN_SUPPORTED_URIS, $target, $matches);
+        $nodeIdentifier = $matches[2];
+
+        $baseContext = $this->contextFactory->create([
+            'workspaceName' => 'live',
+            'invisibleContentShown' => true,
+            'inaccessibleContentShown' => true
+        ]);
+        $targetNode = $baseContext->getNodeByIdentifier($nodeIdentifier);
+
+        if (!($targetNode instanceof NodeInterface)) {
+            return;
+        }
+
+        $resultItem->setTargetPageTitle($targetNode->getProperty('title'));
     }
 }
