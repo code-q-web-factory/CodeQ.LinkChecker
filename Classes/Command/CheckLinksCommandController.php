@@ -7,11 +7,11 @@ namespace CodeQ\LinkChecker\Command;
 use CodeQ\LinkChecker\Domain\Crawler\ContentNodeCrawler;
 use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
 use CodeQ\LinkChecker\Infrastructure\DomainService;
+use CodeQ\LinkChecker\Infrastructure\LogAndPersistResultCrawlObserver;
 use CodeQ\LinkChecker\Infrastructure\UriFactory;
-use CodeQ\LinkChecker\Profile\CrawlNonExcludedUrls;
-use CodeQ\LinkChecker\Reporter\LogBrokenLinks;
+use CodeQ\LinkChecker\Infrastructure\CrawlNonExcludedUrls;
 use CodeQ\LinkChecker\Domain\Notification\NotificationServiceInterface;
-use CodeQ\LinkChecker\Reporter\OriginUrlException;
+use CodeQ\LinkChecker\Infrastructure\OriginUrlException;
 use GuzzleHttp\RequestOptions;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Flow\Annotations as Flow;
@@ -161,7 +161,7 @@ class CheckLinksCommandController extends CommandController
         $this->legacyHackPrettyUrls();
 
         $crawlProfile = new CrawlNonExcludedUrls();
-        $crawlObserver = new LogBrokenLinks();
+        $crawlObserver = new LogAndPersistResultCrawlObserver();
         $clientOptions = $this->getClientOptions();
 
         $crawler = Crawler::create($clientOptions)

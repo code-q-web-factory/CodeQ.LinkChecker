@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CodeQ\LinkChecker\Reporter;
+namespace CodeQ\LinkChecker\Infrastructure;
 
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
 use Spatie\Crawler\CrawlObservers\CrawlObserver;
 
-abstract class BaseReporter extends CrawlObserver
+class LogAndPersistResultCrawlObserver extends CrawlObserver
 {
     /**
      * @var ResultItemRepositoryInterface
@@ -34,6 +34,31 @@ abstract class BaseReporter extends CrawlObserver
     protected array $excludeStatusCodes = [];
 
     protected array $resultItemsGroupedByStatusCode = [];
+
+    /**
+     * Called when the crawl has ended.
+     */
+    public function finishedCrawling(): void
+    {
+        $this->outputLine('');
+        $this->outputLine('Summary:');
+        $this->outputLine('--------');
+
+        if (count($this->resultItemsGroupedByStatusCode) === 0) {
+            $this->outputLine('No links crawled. Maybe check on your robots index options.');
+            return;
+        }
+
+        foreach ($this->resultItemsGroupedByStatusCode as $statusCode => $urls) {
+            $count = \count($urls);
+            if ($statusCode < 100) {
+                $this->outputLine("$count url(s) did have unresponsive host(s)");
+                continue;
+            }
+
+            $this->outputLine("Crawled $count url(s) with status code {$statusCode}");
+        }
+    }
 
     public function getResultItemsGroupedByStatusCode(): array
     {
