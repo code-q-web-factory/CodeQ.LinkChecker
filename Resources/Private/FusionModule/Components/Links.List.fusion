@@ -39,6 +39,7 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
                 action = 'show'
                 arguments.node = ${link.sourcePath}
 
+                @process.removeLeadingProtocoll = ${String.replace(value, ["https://", "http://"], "")}
                 @process.removeLeadingSlash = ${String.trim(value, '/')}
                 @process.replaceSlashWithArrow = ${String.replace(value, '/', ' > ')}
             }
@@ -96,6 +97,8 @@ prototype(CodeQ.LinkChecker:Component.Links.List.Link) < prototype(Neos.Fusion:C
                 controller = 'Backend'
                 action = 'index'
                 arguments.node = ${link.targetPath + '@' + Neos.Ui.Workspace.getPersonalWorkspace()['name']}
+
+                @process.replaceBaseUri = ${String.replace(value, request.httpRequest.uri, link.domain)}
             }
         }
 
