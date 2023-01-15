@@ -9,6 +9,7 @@ CodeQ:
     excludeUrls: []
 
     clientOptions:
+      retryAttempts: 2
       cookies: true
       connectionTimeout: 10
       timeout: 10

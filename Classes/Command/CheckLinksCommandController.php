@@ -12,6 +12,11 @@ use CodeQ\LinkChecker\Infrastructure\UriFactory;
 use CodeQ\LinkChecker\Infrastructure\CrawlNonExcludedUrls;
 use CodeQ\LinkChecker\Domain\Notification\NotificationServiceInterface;
 use CodeQ\LinkChecker\Infrastructure\OriginUrlException;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\RequestOptions;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Flow\Annotations as Flow;
@@ -162,9 +167,8 @@ class CheckLinksCommandController extends CommandController
 
         $crawlProfile = new CrawlNonExcludedUrls();
         $crawlObserver = new LogAndPersistResultCrawlObserver();
-        $clientOptions = $this->getClientOptions();
 
-        $crawler = Crawler::create($clientOptions)
+        $crawler = self::createCrawlerFromSettings($this->settings['clientOptions'] ?? [])
             ->setConcurrency($this->getConcurrency())
             ->setCrawlObserver($crawlObserver)
             ->setCrawlProfile($crawlProfile);
@@ -206,43 +210,71 @@ class CheckLinksCommandController extends CommandController
         }
     }
 
-    /**
-     * Get client options for the guzzle client from the settings. If no settings are configured we just set
-     * timeout and allow_redirect.
-     *
-     */
-    protected function getClientOptions(): array
+    private static function createCrawlerFromSettings(array $settings): Crawler
     {
+        // If no settings are configured we just set timeout and allow_redirect.
         $clientOptions = [
             RequestOptions::TIMEOUT => 100,
             RequestOptions::ALLOW_REDIRECTS => false,
         ];
 
-        $optionsSettings = $this->settings['clientOptions'] ?? [];
-        if (isset($optionsSettings['cookies']) && is_bool($optionsSettings['cookies'])) {
-            $clientOptions[RequestOptions::COOKIES] = $optionsSettings['cookies'];
+        if (isset($settings['cookies']) && is_bool($settings['cookies'])) {
+            $clientOptions[RequestOptions::COOKIES] = $settings['cookies'];
         }
 
-        if (isset($optionsSettings['connectionTimeout']) && is_numeric($optionsSettings['connectionTimeout'])) {
-            $clientOptions[RequestOptions::CONNECT_TIMEOUT] = $optionsSettings['connectionTimeout'];
+        if (isset($settings['connectionTimeout']) && is_numeric($settings['connectionTimeout'])) {
+            $clientOptions[RequestOptions::CONNECT_TIMEOUT] = (int)$settings['connectionTimeout'];
         }
 
-        if (isset($optionsSettings['timeout']) && is_numeric($optionsSettings['timeout'])) {
-            $clientOptions[RequestOptions::TIMEOUT] = $optionsSettings['timeout'];
+        if (isset($settings['timeout']) && is_numeric($settings['timeout'])) {
+            $clientOptions[RequestOptions::TIMEOUT] = (int)$settings['timeout'];
         }
 
-        if (isset($optionsSettings['allowRedirects']) && is_bool($optionsSettings['allowRedirects'])) {
-            $clientOptions[RequestOptions::ALLOW_REDIRECTS] = $optionsSettings['allowRedirects'];
+        if (isset($settings['allowRedirects']) && is_bool($settings['allowRedirects'])) {
+            $clientOptions[RequestOptions::ALLOW_REDIRECTS] = $settings['allowRedirects'];
         }
 
         if (
-            isset($optionsSettings['auth']) && is_array($optionsSettings['auth'])
-            && count($optionsSettings['auth']) > 1
+            isset($settings['auth']) && is_array($settings['auth'])
+            && count($settings['auth']) > 1
         ) {
-            $clientOptions[RequestOptions::AUTH] = $optionsSettings['auth'];
+            $clientOptions[RequestOptions::AUTH] = $settings['auth'];
         }
 
-        return $clientOptions;
+        $handler = HandlerStack::create();
+
+        if (isset($settings['retryAttempts']) && is_numeric($settings['retryAttempts']) && $settings['retryAttempts'] >= 0) {
+
+            $retryAttempts = (int)$settings['retryAttempts'];
+
+            $handler->push(
+                Middleware::retry(
+                    function (
+                        $retries,
+                        Request $request,
+                        Response $response = null,
+                        \Exception $exception = null
+                    ) use($retryAttempts) {
+                        if ($retries >= $retryAttempts) {
+                            return false;
+                        }
+                        if ($exception instanceof ConnectException) {
+                            return true;
+                        }
+                        return false;
+                    },
+                    function (
+                        $numberOfRetries
+                    ) {
+                        return 1000 * $numberOfRetries;
+                    }
+                )
+            );
+        }
+
+        $clientOptions["handler"] = $handler;
+
+        return Crawler::create($clientOptions);
     }
 
     /**
