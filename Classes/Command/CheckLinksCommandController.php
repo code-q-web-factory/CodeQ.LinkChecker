@@ -169,9 +169,11 @@ class CheckLinksCommandController extends CommandController
 
     private function crawlNodesCommandImplementation(array $domainsToCrawl, int &$errorCount): void
     {
+        /** @var callable|null $restoreBaseUriProviderSingleton */
+        $restoreBaseUriProviderSingleton = null;
         foreach ($domainsToCrawl as $domainToCrawl) {
             $baseUriOfDomain = $this->uriFactory->createFromDomain($domainToCrawl);
-            $this->hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton($baseUriOfDomain);
+            $restoreBaseUriProviderSingleton = $this->hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton($baseUriOfDomain);
 
             /** @var ContentContext $subgraph */
             $subgraph = $this->contextFactory->create([
@@ -186,6 +188,10 @@ class CheckLinksCommandController extends CommandController
                 $this->output->outputFormatted('<error>' . $message . '</error>');
             }
             $this->output->outputLine("Problems: " . \count($messages));
+        }
+
+        if ($restoreBaseUriProviderSingleton) {
+            $restoreBaseUriProviderSingleton();
         }
     }
 
@@ -388,10 +394,23 @@ class CheckLinksCommandController extends CommandController
         );
     }
 
-    private function hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton(UriInterface $baseUri): void
+    /**
+     * @return callable restore the original state
+     */
+    private function hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton(UriInterface $baseUri): callable
     {
         assert($this->baseUriProvider instanceof BaseUriProvider);
+
+        static $originalConfiguredBaseUri;
+        if (!isset($originalConfiguredBaseUri)) {
+            $originalConfiguredBaseUri = ObjectAccess::getProperty($this->baseUriProvider, "configuredBaseUri", true);
+        }
+
         ObjectAccess::setProperty($this->baseUriProvider, "configuredBaseUri", (string)$baseUri, true);
+
+        return function () use($originalConfiguredBaseUri) {
+            ObjectAccess::setProperty($this->baseUriProvider, "configuredBaseUri", $originalConfiguredBaseUri, true);
+        };
     }
 
     private function legacyHackPrettyUrls(): void
