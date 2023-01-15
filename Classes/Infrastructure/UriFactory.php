@@ -16,8 +16,6 @@ class UriFactory
 {
     public function createFromDomain(Domain $domain): UriInterface
     {
-        $uri = $domain->getScheme() . '://' . $domain->getHostname()
-            . ($domain->getPort() ? ':' . $domain->getPort() : '');
-        return new Uri($uri);
+        return new Uri($domain->__toString());
     }
 }
