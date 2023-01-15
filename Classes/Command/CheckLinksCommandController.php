@@ -17,13 +17,16 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\ServerRequest;
+use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\RequestOptions;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\CommandController;
+use Neos\Flow\Cli\Exception\StopCommandException;
 use Neos\Flow\Http\BaseUriProvider;
 use Neos\Flow\I18n\Translator;
-use Neos\Neos\Domain\Model\Domain;
+use Neos\Flow\Mvc;
 use Neos\Neos\Domain\Service\ContentContext;
 use Neos\Utility\ObjectAccess;
 use Psr\Http\Message\UriInterface;
@@ -31,7 +34,6 @@ use Spatie\Crawler\Crawler;
 
 /**
  * @Flow\Scope("singleton")
- * @see https://gist.github.com/hhoechtl/9012d455eab52658bbf4
  */
 class CheckLinksCommandController extends CommandController
 {
@@ -95,21 +97,10 @@ class CheckLinksCommandController extends CommandController
         $this->settings = $settings;
     }
 
-    private function legacyHackPrettyUrls(): void
-    {
-        // with Flow 7.1 not needed anymore
-        // see FEATURE: Enable URL Rewriting by default
-        // https://github.com/neos/flow-development-collection/pull/2459
-        // needed for \CodeQ\LinkChecker\Domain\Factory\UriBuilderFactory::create
-        if ($_SERVER['FLOW_REWRITEURLS'] !== '1') {
-            $_SERVER['FLOW_REWRITEURLS'] = '1';
-        }
-    }
-
     /**
      * Clear all stored errors
      *
-     * @param bool $keepIgnored If set, ignored errors will not be deleted
+     * @param bool $keepIgnored ignored errors will not be deleted
      */
     public function clearCommand(bool $keepIgnored = false): void
     {
@@ -123,11 +114,19 @@ class CheckLinksCommandController extends CommandController
     /**
      * Crawl for invalid node links and external links
      *
+     * @param bool $withNotification sends email notification after scan
      */
-    public function crawlCommand(): void
+    public function crawlCommand(bool $withNotification = false): void
     {
-        $this->crawlNodesCommand();
-        $this->crawlExternalLinksCommand();
+        $this->legacyHackPrettyUrls();
+        $domainsToCrawl = $this->domainService->findAllSitesPrimaryDomain();
+        $this->ensureDomainsNotEmpty($domainsToCrawl);
+        $errorCount = 0;
+        $this->crawlNodesCommandImplementation($domainsToCrawl, $errorCount);
+        $this->crawlExternalCommandImplementation($domainsToCrawl, $errorCount);
+        if ($withNotification) {
+            $this->sendNotificationIfNecessary($errorCount, $this->createLinkCheckerDashboardUriFromStuff($domainsToCrawl));
+        }
     }
 
     /**
@@ -135,23 +134,17 @@ class CheckLinksCommandController extends CommandController
      *
      * This command crawls an url for invalid internal and external links
      *
+     * @param bool $withNotification sends email notification after scan
      */
-    public function crawlNodesCommand(): void
+    public function crawlNodesCommand(bool $withNotification = false): void
     {
         $this->legacyHackPrettyUrls();
-
         $domainsToCrawl = $this->domainService->findAllSitesPrimaryDomain();
-
-        if (count($domainsToCrawl) === 0) {
-            $message = $this->translator->translatebyid('noDomainsFound', [], null, null, 'Modules', 'CodeQ.LinkChecker');
-            $this->output->outputFormatted('<error>' . $message . '</error>');
-            return;
-        }
-
-        foreach ($domainsToCrawl as $domainToCrawl) {
-            $baseUriOfDomain = $this->uriFactory->createFromDomain($domainToCrawl);
-            $this->hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton($baseUriOfDomain);
-            $this->crawlDomain($domainToCrawl);
+        $this->ensureDomainsNotEmpty($domainsToCrawl);
+        $errorCount = 0;
+        $this->crawlNodesCommandImplementation($domainsToCrawl, $errorCount);
+        if ($withNotification) {
+            $this->sendNotificationIfNecessary($errorCount, $this->createLinkCheckerDashboardUriFromStuff($domainsToCrawl));
         }
     }
 
@@ -160,11 +153,44 @@ class CheckLinksCommandController extends CommandController
      *
      * This command crawls the whole website for invalid external links
      *
+     * @param bool $withNotification sends email notification after scan
      */
-    public function crawlExternalLinksCommand(): void
+    public function crawlExternalLinksCommand(bool $withNotification = false): void
     {
         $this->legacyHackPrettyUrls();
+        $domainsToCrawl = $this->domainService->findAllSitesPrimaryDomain();
+        $this->ensureDomainsNotEmpty($domainsToCrawl);
+        $errorCount = 0;
+        $this->crawlExternalCommandImplementation($domainsToCrawl, $errorCount);
+        if ($withNotification) {
+            $this->sendNotificationIfNecessary($errorCount, $this->createLinkCheckerDashboardUriFromStuff($domainsToCrawl));
+        }
+    }
 
+    private function crawlNodesCommandImplementation(array $domainsToCrawl, int &$errorCount): void
+    {
+        foreach ($domainsToCrawl as $domainToCrawl) {
+            $baseUriOfDomain = $this->uriFactory->createFromDomain($domainToCrawl);
+            $this->hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton($baseUriOfDomain);
+
+            /** @var ContentContext $subgraph */
+            $subgraph = $this->contextFactory->create([
+                'currentSite' => $domainToCrawl->getSite(),
+                'currentDomain' => $domainToCrawl,
+            ]);
+
+            $messages = $this->contentNodeCrawler->crawl($subgraph, $domainToCrawl);
+            $errorCount += \count($messages);
+
+            foreach ($messages as $message) {
+                $this->output->outputFormatted('<error>' . $message . '</error>');
+            }
+            $this->output->outputLine("Problems: " . \count($messages));
+        }
+    }
+
+    private function crawlExternalCommandImplementation(array $domainsToCrawl, int &$errorCount): void
+    {
         $crawlProfile = new CrawlNonExcludedUrls();
         $crawlObserver = new LogAndPersistResultCrawlObserver();
 
@@ -177,14 +203,6 @@ class CheckLinksCommandController extends CommandController
             $crawler->ignoreRobots();
         }
 
-        $domainsToCrawl = $this->domainService->findAllSitesPrimaryDomain();
-
-        if (count($domainsToCrawl) === 0) {
-            $message = $this->translator->translatebyid('noDomainsFound', [], null, null, 'Modules', 'CodeQ.LinkChecker');
-            $this->output->outputFormatted('<error>' . $message . '</error>');
-            return;
-        }
-
         foreach ($domainsToCrawl as $domainToCrawl) {
 
             $url = $this->uriFactory->createFromDomain($domainToCrawl);
@@ -195,18 +213,26 @@ class CheckLinksCommandController extends CommandController
 
                 try {
                     $crawler->startCrawling($url);
+                    $errorCount += $crawlObserver->getErrorCount();
                 } catch (OriginUrlException $originUrlException) {
                     $this->outputFormatted("<error>{$originUrlException->getMessage()}</error>");
                     $this->outputFormatted("<error>The configured site domain $url could not be reached, please check if the URL is correct.</error>");
                     return;
                 }
 
-                if ($this->settings['notifications']['enabled'] ?? false) {
-                    $this->sendNotification($crawlObserver->getResultItemsGroupedByStatusCode());
-                }
             } catch (\InvalidArgumentException $exception) {
                 $this->outputLine('ERROR:  ' . $exception->getMessage());
             }
+        }
+    }
+
+    /** @throws StopCommandException */
+    private function ensureDomainsNotEmpty(array $domains): void
+    {
+        if (count($domains) == 0) {
+            $message = $this->translator->translatebyid('noDomainsFound', [], null, null, 'Modules', 'CodeQ.LinkChecker');
+            $this->output->outputFormatted('<error>' . $message . '</error>');
+            $this->quit();
         }
     }
 
@@ -281,7 +307,7 @@ class CheckLinksCommandController extends CommandController
      * Returns concurrency. If not found, simply returns a default value like
      * 10 (default).
      */
-    protected function getConcurrency(): int
+    private function getConcurrency(): int
     {
         if (isset($this->settings['concurrency']) && (int)$this->settings['concurrency'] >= 0) {
             return (int)$this->settings['concurrency'];
@@ -293,34 +319,56 @@ class CheckLinksCommandController extends CommandController
     /**
      * Returns true by default and can be changed by the setting ignoreRobots
      */
-    protected function shouldIgnoreRobots(): bool
+    private function shouldIgnoreRobots(): bool
     {
         return !isset($this->settings['ignoreRobots']) || $this->settings['ignoreRobots'];
+    }
+
+    private function createLinkCheckerDashboardUriFromStuff(array $domains): UriInterface
+    {
+        $firstDomain = $domains[0];
+        $baseUri = $this->uriFactory->createFromDomain($firstDomain);
+        return $this->createBackendModuleUri("management/link-checker", "index", $baseUri);
+    }
+
+    private function createBackendModuleUri(string $module, string $moduleAction, UriInterface $baseUri): UriInterface
+    {
+        $request = new ServerRequest("GET", $baseUri);
+        $actionRequest = Mvc\ActionRequest::fromHttpRequest($request);
+        $uriBuilder = new Mvc\Routing\UriBuilder();
+        $uriBuilder->setRequest($actionRequest);
+
+        $uriBuilder->setCreateAbsoluteUri(true);
+
+        return new Uri($uriBuilder->uriFor(
+            'index',
+            [
+                'module' => $module,
+                'moduleArguments' => ['@action' => $moduleAction]
+            ],
+            'Backend\Module',
+            'Neos.Neos'
+        ));
     }
 
     /**
      * Send notification about the result of the link check run. The notification service can be configured.
      * Default is the emailService.
      */
-    protected function sendNotification(array $results): void
+    private function sendNotificationIfNecessary(int $errorCount, UriInterface $linkCheckerDashboardUri): void
     {
+        if ($errorCount <= 0) {
+            return;
+        }
+
+        if (!$this->settings['notifications']['enabled']) {
+            return;
+        }
+
         $notificationServiceClass = trim($this->notificationServiceClass);
         if ($notificationServiceClass === '') {
             $errorMessage = 'No notification service has been configured, but the notification handling is enabled';
             throw new \InvalidArgumentException($errorMessage, 1540201992);
-        }
-
-        $minimumStatusCode = $this->settings['notifications']['minimumStatusCode'] ?? self::MIN_STATUS_CODE;
-        $arguments = [];
-        foreach ($results as $statusCode => $urls) {
-            if ($statusCode < (int)$minimumStatusCode) {
-                continue;
-            }
-            $arguments['result'][$statusCode] = [
-                'statusCode' => $statusCode,
-                'urls' => $urls,
-                'amount' => count($urls)
-            ];
         }
 
         $notificationService = $this->objectManager->get($notificationServiceClass);
@@ -331,7 +379,13 @@ class CheckLinksCommandController extends CommandController
                 1668164428
             );
         }
-        $notificationService->sendNotification($this->settings['notifications']['subject'] ?? '', $arguments);
+        $notificationService->sendNotification(
+            $this->settings['notifications']['subject'] ?? '',
+            [
+                'errorCount' => $errorCount,
+                'linkCheckerDashboardUri' => $linkCheckerDashboardUri
+            ]
+        );
     }
 
     private function hackTheConfiguredBaseUriOfTheBaseUriProviderSingleton(UriInterface $baseUri): void
@@ -340,19 +394,14 @@ class CheckLinksCommandController extends CommandController
         ObjectAccess::setProperty($this->baseUriProvider, "configuredBaseUri", (string)$baseUri, true);
     }
 
-    protected function crawlDomain(Domain $domain): void
+    private function legacyHackPrettyUrls(): void
     {
-        /** @var ContentContext $subgraph */
-        $subgraph = $this->contextFactory->create([
-            'currentSite' => $domain->getSite(),
-            'currentDomain' => $domain,
-        ]);
-
-        $messages = $this->contentNodeCrawler->crawl($subgraph, $domain);
-
-        foreach ($messages as $message) {
-            $this->output->outputFormatted('<error>' . $message . '</error>');
+        // with Flow 7.1 not needed anymore
+        // see FEATURE: Enable URL Rewriting by default
+        // https://github.com/neos/flow-development-collection/pull/2459
+        // needed for \CodeQ\LinkChecker\Domain\Factory\UriBuilderFactory::create
+        if ($_SERVER['FLOW_REWRITEURLS'] !== '1') {
+            $_SERVER['FLOW_REWRITEURLS'] = '1';
         }
-        $this->output->outputLine("Problems: " . count($messages));
     }
 }

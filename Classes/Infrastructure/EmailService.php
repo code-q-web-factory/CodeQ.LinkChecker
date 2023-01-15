@@ -54,12 +54,6 @@ class EmailService implements NotificationServiceInterface
     protected $template;
 
     /**
-     * @var array
-     * @Flow\InjectConfiguration(path="notifications.mail.attachment")
-     */
-    protected $attachment;
-
-    /**
      * @var string
      * @Flow\InjectConfiguration(path="notifications.mail.logging.errors")
      */
@@ -106,47 +100,7 @@ class EmailService implements NotificationServiceInterface
             ->setBody($plainTextBody)
             ->addPart($htmlBody, 'text/html');
 
-        if (isset($this->attachment['enableMailAttachment']) && (bool)$this->attachment['enableMailAttachment']) {
-            $attachment = $this->generateCsvAttachment($variables);
-            $mail->attach($attachment);
-        }
-
         return $this->sendMail($mail);
-    }
-
-    /**
-     * Generates a CSV file with the status code, failing url and  origin url as columns.
-     *
-     * @throws CannotInsertRecord
-     * @throws Exception
-     */
-    protected function generateCsvAttachment(array $variables): Swift_Attachment
-    {
-        $csvHeader = $this->attachment['csvHeader'] ?? ['Status', 'URL', 'Origin', 'Domain', 'Checked at'];
-        $contentRows = [];
-
-        foreach ($variables['result'] as $statusCode => $results) {
-            foreach ($results['urls'] as $urlRecord) {
-                if (!($urlRecord instanceof ResultItem)) {
-                    continue;
-                }
-
-                /** @var ResultItem $urlRecord */
-                $contentRows[] = [
-                    $statusCode,
-                    $urlRecord->getTarget(),
-                    $urlRecord->getSourcePath(),
-                    $urlRecord->getDomain(),
-                    $urlRecord->getCheckedAt()->format('d.m.Y H:i'),
-                ];
-            }
-        }
-
-        $csv = Writer::createFromString();
-        $csv->insertOne($csvHeader);
-        $csv->insertAll($contentRows);
-
-        return new Swift_Attachment($csv->toString(), 'LinkCheckerReport_' . date('Y-m-d-H-i-s') . '.csv', 'text/csv');
     }
 
     /**
