@@ -1,11 +1,8 @@
-<html xmlns:f="http://typo3.org/ns/TYPO3Fluid/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<html>
 <h2>Link check summary:</h2>
 
-<ul>
-  <f:for as="resultItem" each="{result}">
-    <li>Crawled {resultItem.amount} url(s) with status code {resultItem.statusCode}</li>
-  </f:for>
-</ul>
+{errorCount} problems have been found.
+<br/>
+For more details visit the <a href="{linkCheckerDashboardUri}">link checker dashboard</a>.
 
-<p>You can find more details in the LinkChecker in the attached CSV report file.</p>
 </html>

@@ -1,8 +1,4 @@
 Link check summary:
 -------------------
 
-<f:for as="resultItem" each="{result}">
-    - Crawled {resultItem.amount} url(s) with status code {resultItem.statusCode}
-</f:for>
-
-You can find more details in the LinkChecker in the attached CSV report file.
+{errorCount} problems have been found. For more details visit the link checker dashboard at: {linkCheckerDashboardUri}

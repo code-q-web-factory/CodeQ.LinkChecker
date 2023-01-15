@@ -20,7 +20,6 @@ CodeQ:
       enabled: true
       service: CodeQ\LinkChecker\Infrastructure\EmailService
       subject: 'Link checker results'
-      minimumStatusCode: 300
       mail:
         sender:
           default:
@@ -33,14 +32,6 @@ CodeQ:
         template:
           package: 'CodeQ.LinkChecker'
           file: 'NotificationMail'
-        attachment:
-          enableMailAttachment: true
-          csvHeader:
-            - 'Status code'
-            - 'URL'
-            - 'Origin URL'
-            - 'Domain'
-            - 'Checked at'
         logging:
           errors: log
           success: log

@@ -60,9 +60,13 @@ class LogAndPersistResultCrawlObserver extends CrawlObserver
         }
     }
 
-    public function getResultItemsGroupedByStatusCode(): array
+    public function getErrorCount(): int
     {
-        return $this->resultItemsGroupedByStatusCode;
+        $errorCount = 0;
+        foreach ($this->resultItemsGroupedByStatusCode as $statusCode => $urls) {
+            $errorCount += \count($urls);
+        }
+        return $errorCount;
     }
 
     /**
