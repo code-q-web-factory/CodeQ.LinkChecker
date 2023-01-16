@@ -31,14 +31,14 @@ use Neos\Neos\Domain\Service\ContentContext;
 use Neos\Utility\ObjectAccess;
 use Psr\Http\Message\UriInterface;
 use Spatie\Crawler\Crawler;
+use Spatie\Crawler\CrawlObservers\CrawlObserver;
+use Spatie\Crawler\CrawlProfiles\CrawlProfile;
 
 /**
  * @Flow\Scope("singleton")
  */
 class CheckLinksCommandController extends CommandController
 {
-    public const MIN_STATUS_CODE = 404;
-
     /**
      * @var Translator
      * @Flow\Inject
@@ -200,14 +200,7 @@ class CheckLinksCommandController extends CommandController
         $crawlProfile = new CrawlNonExcludedUrls();
         $crawlObserver = new LogAndPersistResultCrawlObserver();
 
-        $crawler = self::createCrawlerFromSettings($this->settings['clientOptions'] ?? [])
-            ->setConcurrency($this->getConcurrency())
-            ->setCrawlObserver($crawlObserver)
-            ->setCrawlProfile($crawlProfile);
-
-        if ($this->shouldIgnoreRobots()) {
-            $crawler->ignoreRobots();
-        }
+        $crawler = self::createCrawler($this->settings['clientOptions'] ?? [], $crawlProfile, $crawlObserver);
 
         foreach ($domainsToCrawl as $domainToCrawl) {
 
@@ -242,7 +235,7 @@ class CheckLinksCommandController extends CommandController
         }
     }
 
-    private static function createCrawlerFromSettings(array $settings): Crawler
+    private static function createCrawler(array $settings, CrawlProfile $crawlProfile, CrawlObserver $crawlObserver): Crawler
     {
         // If no settings are configured we just set timeout and allow_redirect.
         $clientOptions = [
@@ -306,28 +299,21 @@ class CheckLinksCommandController extends CommandController
 
         $clientOptions["handler"] = $handler;
 
-        return Crawler::create($clientOptions);
-    }
+        $crawler = Crawler::create($clientOptions)
+            ->setCrawlObserver($crawlObserver)
+            ->setCrawlProfile($crawlProfile);
 
-    /**
-     * Returns concurrency. If not found, simply returns a default value like
-     * 10 (default).
-     */
-    private function getConcurrency(): int
-    {
-        if (isset($this->settings['concurrency']) && (int)$this->settings['concurrency'] >= 0) {
-            return (int)$this->settings['concurrency'];
+        $concurrency = 10;
+        if (isset($settings['concurrency']) && (int)$settings['concurrency'] >= 0) {
+            $concurrency = (int)$settings['concurrency'];
+        }
+        $crawler->setConcurrency($concurrency);
+
+        if (!isset($settings['ignoreRobots']) || $settings['ignoreRobots']) {
+            $crawler->ignoreRobots();
         }
 
-        return 10;
-    }
-
-    /**
-     * Returns true by default and can be changed by the setting ignoreRobots
-     */
-    private function shouldIgnoreRobots(): bool
-    {
-        return !isset($this->settings['ignoreRobots']) || $this->settings['ignoreRobots'];
+        return $crawler;
     }
 
     private function createLinkCheckerDashboardUriFromStuff(array $domains): UriInterface
