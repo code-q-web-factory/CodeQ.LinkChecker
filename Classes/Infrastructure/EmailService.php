@@ -2,17 +2,12 @@
 
 namespace CodeQ\LinkChecker\Infrastructure;
 
-use CodeQ\LinkChecker\Domain\Model\ResultItem;
 use CodeQ\LinkChecker\Domain\Notification\NotificationServiceInterface;
-use League\Csv\CannotInsertRecord;
-use League\Csv\Exception;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\FluidAdaptor\View\StandaloneView;
 use Neos\SwiftMailer\Message;
-use League\Csv\Writer;
 use Psr\Log\LoggerInterface;
-use Swift_Attachment;
 
 /**
  * @Flow\Scope("singleton")
