@@ -12,14 +12,9 @@ use CodeQ\LinkChecker\Infrastructure\UriFactory;
 use CodeQ\LinkChecker\Infrastructure\CrawlNonExcludedUrls;
 use CodeQ\LinkChecker\Domain\Notification\NotificationServiceInterface;
 use CodeQ\LinkChecker\Infrastructure\OriginUrlException;
-use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Middleware;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
+use CodeQ\LinkChecker\Infrastructure\WebCrawlerFactory;
 use GuzzleHttp\Psr7\ServerRequest;
 use GuzzleHttp\Psr7\Uri;
-use GuzzleHttp\RequestOptions;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\CommandController;
@@ -30,9 +25,6 @@ use Neos\Flow\Mvc;
 use Neos\Neos\Domain\Service\ContentContext;
 use Neos\Utility\ObjectAccess;
 use Psr\Http\Message\UriInterface;
-use Spatie\Crawler\Crawler;
-use Spatie\Crawler\CrawlObservers\CrawlObserver;
-use Spatie\Crawler\CrawlProfiles\CrawlProfile;
 
 /**
  * @Flow\Scope("singleton")
@@ -70,32 +62,28 @@ class CheckLinksCommandController extends CommandController
     protected $uriFactory;
 
     /**
+     * @var WebCrawlerFactory
+     * @Flow\Inject
+     */
+    protected $webCrawlerFactory;
+
+    /**
      * @Flow\Inject
      * @var ResultItemRepositoryInterface
      */
     protected $resultItemRepository;
 
     /**
-     * @var string
-     * @Flow\InjectConfiguration(path="notifications.service")
+     * @Flow\InjectConfiguration(path="notifications")
+     * @var array
      */
-    protected $notificationServiceClass;
+    protected $notificationSettings;
 
     /**
      * @var BaseUriProvider
      * @Flow\Inject(lazy=false)
      */
     protected $baseUriProvider;
-
-    protected array $settings;
-
-    /**
-     * Inject the settings
-     */
-    public function injectSettings(array $settings): void
-    {
-        $this->settings = $settings;
-    }
 
     /**
      * Clear all stored errors
@@ -200,7 +188,7 @@ class CheckLinksCommandController extends CommandController
         $crawlProfile = new CrawlNonExcludedUrls();
         $crawlObserver = new LogAndPersistResultCrawlObserver();
 
-        $crawler = self::createCrawler($this->settings['clientOptions'] ?? [], $crawlProfile, $crawlObserver);
+        $crawler = $this->webCrawlerFactory->createCrawler($crawlProfile, $crawlObserver);
 
         foreach ($domainsToCrawl as $domainToCrawl) {
 
@@ -233,87 +221,6 @@ class CheckLinksCommandController extends CommandController
             $this->output->outputFormatted('<error>' . $message . '</error>');
             $this->quit();
         }
-    }
-
-    private static function createCrawler(array $settings, CrawlProfile $crawlProfile, CrawlObserver $crawlObserver): Crawler
-    {
-        // If no settings are configured we just set timeout and allow_redirect.
-        $clientOptions = [
-            RequestOptions::TIMEOUT => 100,
-            RequestOptions::ALLOW_REDIRECTS => false,
-        ];
-
-        if (isset($settings['cookies']) && is_bool($settings['cookies'])) {
-            $clientOptions[RequestOptions::COOKIES] = $settings['cookies'];
-        }
-
-        if (isset($settings['connectionTimeout']) && is_numeric($settings['connectionTimeout'])) {
-            $clientOptions[RequestOptions::CONNECT_TIMEOUT] = (int)$settings['connectionTimeout'];
-        }
-
-        if (isset($settings['timeout']) && is_numeric($settings['timeout'])) {
-            $clientOptions[RequestOptions::TIMEOUT] = (int)$settings['timeout'];
-        }
-
-        if (isset($settings['allowRedirects']) && is_bool($settings['allowRedirects'])) {
-            $clientOptions[RequestOptions::ALLOW_REDIRECTS] = $settings['allowRedirects'];
-        }
-
-        if (
-            isset($settings['auth']) && is_array($settings['auth'])
-            && count($settings['auth']) > 1
-        ) {
-            $clientOptions[RequestOptions::AUTH] = $settings['auth'];
-        }
-
-        $handler = HandlerStack::create();
-
-        if (isset($settings['retryAttempts']) && is_numeric($settings['retryAttempts']) && $settings['retryAttempts'] >= 0) {
-
-            $retryAttempts = (int)$settings['retryAttempts'];
-
-            $handler->push(
-                Middleware::retry(
-                    function (
-                        $retries,
-                        Request $request,
-                        Response $response = null,
-                        \Exception $exception = null
-                    ) use($retryAttempts) {
-                        if ($retries >= $retryAttempts) {
-                            return false;
-                        }
-                        if ($exception instanceof ConnectException) {
-                            return true;
-                        }
-                        return false;
-                    },
-                    function (
-                        $numberOfRetries
-                    ) {
-                        return 1000 * $numberOfRetries;
-                    }
-                )
-            );
-        }
-
-        $clientOptions["handler"] = $handler;
-
-        $crawler = Crawler::create($clientOptions)
-            ->setCrawlObserver($crawlObserver)
-            ->setCrawlProfile($crawlProfile);
-
-        $concurrency = 10;
-        if (isset($settings['concurrency']) && (int)$settings['concurrency'] >= 0) {
-            $concurrency = (int)$settings['concurrency'];
-        }
-        $crawler->setConcurrency($concurrency);
-
-        if (!isset($settings['ignoreRobots']) || $settings['ignoreRobots']) {
-            $crawler->ignoreRobots();
-        }
-
-        return $crawler;
     }
 
     private function createLinkCheckerDashboardUriFromStuff(array $domains): UriInterface
@@ -353,11 +260,11 @@ class CheckLinksCommandController extends CommandController
             return;
         }
 
-        if (!$this->settings['notifications']['enabled']) {
+        if (!$this->notificationSettings['enabled']) {
             return;
         }
 
-        $notificationServiceClass = trim($this->notificationServiceClass);
+        $notificationServiceClass = trim($this->notificationSettings['service']);
         if ($notificationServiceClass === '') {
             $errorMessage = 'No notification service has been configured, but the notification handling is enabled';
             throw new \InvalidArgumentException($errorMessage, 1540201992);
@@ -372,7 +279,7 @@ class CheckLinksCommandController extends CommandController
             );
         }
         $notificationService->sendNotification(
-            $this->settings['notifications']['subject'] ?? '',
+            $this->notificationSettings['subject'] ?? '',
             [
                 'errorCount' => $errorCount,
                 'linkCheckerDashboardUri' => $linkCheckerDashboardUri
