@@ -312,7 +312,7 @@ class CheckLinksCommandController extends CommandController
         // see FEATURE: Enable URL Rewriting by default
         // https://github.com/neos/flow-development-collection/pull/2459
         // needed for \CodeQ\LinkChecker\Domain\Factory\UriBuilderFactory::create
-        if ($_SERVER['FLOW_REWRITEURLS'] !== '1') {
+        if (!isset($_SERVER['FLOW_REWRITEURLS']) || $_SERVER['FLOW_REWRITEURLS'] !== '1') {
             $_SERVER['FLOW_REWRITEURLS'] = '1';
         }
     }
