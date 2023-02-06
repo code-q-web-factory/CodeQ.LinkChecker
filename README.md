@@ -3,7 +3,9 @@
 
 # CodeQ.LinkChecker
 
-## Finds broken and misconfigured links in your Neos project
+## Keep your Neos website free of broken links with this easy-to-use link checker
+
+CodeQ.LinkChecker makes sure all your links are working smoothly in Neos projects. It validates internal page and asset references, external links an phone numbers in node data, as well crawls all rendered pages to ensure that no hidden pages fall through the cracks!
 
 The link checker has the following methods to find broken links:
 
