@@ -17,7 +17,7 @@ CodeQ:
       auth: []
 
     notifications:
-      enabled: true
+      enabled: false
       service: CodeQ\LinkChecker\Infrastructure\EmailService
       subject: 'Link checker results'
       mail:
