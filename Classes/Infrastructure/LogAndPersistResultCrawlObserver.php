@@ -83,35 +83,41 @@ class LogAndPersistResultCrawlObserver extends CrawlObserver
     /**
      * Called when the crawler has crawled the given url successfully.
      *
-     * @return int
+     * @param  UriInterface  $url
+     * @param  ResponseInterface  $response
+     * @param  UriInterface|null  $foundOnUrl
+     * @param  string|null  $linkText
+     * @return void
      */
     public function crawled(
         UriInterface $url,
         ResponseInterface $response,
-        ?UriInterface $foundOnUrl = null
-    ) {
+        ?UriInterface $foundOnUrl = null,
+        string $linkText = null
+    ): void {
         $statusCode = $response->getStatusCode();
         if (!$this->isExcludedStatusCode($statusCode)) {
             $this->addCrawlingResultToStore($url, $foundOnUrl, $statusCode);
         }
-
-        return $statusCode;
     }
 
     /**
      * Called when the crawler had a problem crawling the given url.
+     * @param  UriInterface  $url
+     * @param  RequestException  $requestException
+     * @param  UriInterface|null  $foundOnUrl
+     * @param  string|null  $linkText
      */
     public function crawlFailed(
         UriInterface $url,
         RequestException $requestException,
-        ?UriInterface $foundOnUrl = null
-    ): int {
+        ?UriInterface $foundOnUrl = null,
+        string $linkText = null
+    ): void {
         $statusCode = (int)$requestException->getCode();
         if (!$this->isExcludedStatusCode($statusCode)) {
             $this->addCrawlingResultToStore($url, $foundOnUrl, $statusCode);
         }
-
-        return $statusCode;
     }
 
     /**
