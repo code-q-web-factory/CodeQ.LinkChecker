@@ -24,7 +24,10 @@ class DomainService
         $sites = $this->siteRepository->findAll()->toArray();
         $domainsWithUniqueSite = [];
         foreach ($sites as $site) {
-            $domainsWithUniqueSite[] = $site->getPrimaryDomain();
+            $primaryDomain = $site->getPrimaryDomain();
+            if ($primaryDomain) {
+                $domainsWithUniqueSite[] = $primaryDomain;
+            }
         }
         return $domainsWithUniqueSite;
     }
