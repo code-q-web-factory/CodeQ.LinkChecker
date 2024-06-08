@@ -175,7 +175,7 @@ class CheckLinksCommandController extends CommandController
             foreach ($messages as $message) {
                 $this->output->outputFormatted('<error>' . $message . '</error>');
             }
-            $this->output->outputLine("Problems: " . \count($messages));
+            $this->output->outputLine(sprintf("Problems for domain %s: %s", $domainToCrawl->__toString(), \count($messages)));
         }
 
         if ($restoreBaseUriProviderSingleton) {

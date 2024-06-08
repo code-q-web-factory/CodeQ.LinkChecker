@@ -18,7 +18,7 @@ class DomainService
     /**
      * @return Domain[]
      */
-    public function findAllSitesPrimaryDomain()
+    public function findAllSitesPrimaryDomain(): array
     {
         /** @var Site[] $sites */
         $sites = $this->siteRepository->findAll()->toArray();

@@ -6,11 +6,12 @@ namespace CodeQ\LinkChecker\Domain\Crawler;
 
 use CodeQ\LinkChecker\Domain\Model\ResultItemRepositoryInterface;
 use CodeQ\LinkChecker\Domain\Model\ResultItem;
-use Neos\ContentRepository\Domain\Model\Node;
+use Neos\ContentRepository\Domain\Model\NodeInterface;
 use Neos\ContentRepository\Domain\NodeAggregate\NodeAggregateIdentifier;
+use Neos\ContentRepository\Domain\Projection\Content\TraversableNodeInterface;
 use Neos\ContentRepository\Domain\Repository\NodeDataRepository;
 use Neos\ContentRepository\Domain\Service\ContextFactoryInterface;
-use Neos\Eel\FlowQuery\FlowQuery;
+use Neos\ContentRepository\Exception\NodeException;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Mvc\Routing\RouterInterface;
 use Neos\Neos\Domain\Model\Domain;
@@ -58,49 +59,33 @@ class ContentNodeCrawler
 
     public function crawl(ContentContext $subgraph, Domain $domain): array
     {
-        /** @var Node[] $allContentAndDocumentNodes */
-        $allContentAndDocumentNodes = FlowQuery::q([$subgraph->getCurrentSiteNode()])
-            ->find('[instanceof Neos.Neos:Document],[instanceof Neos.Neos:Content]')->get();
-
         $messages = [];
 
-        foreach ($allContentAndDocumentNodes as $node) {
-            if (!$this->findIsNodeVisible($node)) {
-                continue;
-            }
-
-            $unresolvedUris = [];
-            $invalidPhoneNumbers = [];
-
-            // todo why use nodeData here and not the node?
-            $properties = $node->getNodeData()->getProperties();
-
-            foreach ($properties as $property) {
-                $this->crawlPropertyForNodesAndAssets($property, $subgraph, $unresolvedUris);
-                $this->crawlPropertyForTelephoneNumbers($property, $invalidPhoneNumbers);
-            }
-
-            foreach ($unresolvedUris as $uri) {
-                $messages[] = 'Not found: ' . $uri;
-
-                $this->createResultItem($subgraph, $domain, $node, $uri, 404);
-            }
-            foreach ($invalidPhoneNumbers as $phoneNumber) {
-                $messages[] = 'Invalid format: ' . $phoneNumber;
-
-                /* @see https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml - 490 is unassigned, and so we can use it */
-                $this->createResultItem($subgraph, $domain, $node, $phoneNumber, 490);
-            }
-        }
+        $currentSiteNode = $subgraph->getCurrentSiteNode();
+        $this->crawlNode($currentSiteNode, $subgraph, $domain, $messages);
+        $this->crawlChildNodesRecursively($currentSiteNode, $subgraph, $domain, $messages);
 
         return $messages;
+    }
+
+    protected function crawlChildNodesRecursively(NodeInterface|TraversableNodeInterface $rootNode, ContentContext $subgraph, Domain $domain, array &$messages): void
+    {
+        $childNodes = $rootNode->findChildNodes();
+
+        foreach ($childNodes as $node) {
+            $this->crawlNode($node, $subgraph, $domain, $messages);
+            $this->crawlChildNodesRecursively($node, $subgraph, $domain, $messages);
+        }
+
+        // Free memory
+        unset($childNodes);
     }
 
     /**
      * @see \Neos\Neos\Fusion\ConvertUrisImplementation::evaluate
      */
     protected function crawlPropertyForNodesAndAssets(
-        $property,
+        mixed $property,
         ContentContext $subgraph,
         array &$unresolvedUris
     ): void {
@@ -179,7 +164,7 @@ class ContentNodeCrawler
     protected function createResultItem(
         ContentContext $subgraph,
         Domain $domain,
-        Node $node,
+        NodeInterface|TraversableNodeInterface $node,
         string $uri,
         int $statusCode
     ): void {
@@ -213,7 +198,7 @@ class ContentNodeCrawler
         $this->resultItemRepository->add($resultItem);
     }
 
-    private function findClosestDocumentNode(Node $node): Node
+    private function findClosestDocumentNode(NodeInterface|TraversableNodeInterface $node): NodeInterface|TraversableNodeInterface
     {
         while ($node->getNodeType()->isOfType('Neos.Neos:Document') === false) {
             $node = $node->findParentNode();
@@ -221,12 +206,13 @@ class ContentNodeCrawler
         return $node;
     }
 
-    private function findIsNodeVisible(Node $node): bool
+    private function findIsNodeVisible(NodeInterface|TraversableNodeInterface $node): bool
     {
         do {
             $previousNode = $node;
-            $node = $node->getParent();
-            if ($node === null) {
+            try {
+                $node = $node->findParentNode();
+            } catch (NodeException) {
                 if ($previousNode->isRoot()) {
                     return true;
                 }
@@ -241,5 +227,31 @@ class ContentNodeCrawler
         /** @var ContentContext $newSubgraph */
         $newSubgraph = $this->contextFactory->create(array_merge($currentConfiguration, $additionalConfiguration));
         return $newSubgraph;
+    }
+
+    protected function crawlNode(NodeInterface|TraversableNodeInterface $node, ContentContext $subgraph, Domain $domain, array &$messages): void
+    {
+        $unresolvedUris = [];
+        $invalidPhoneNumbers = [];
+
+        // todo why use nodeData here and not the node?
+        $properties = $node->getNodeData()->getProperties();
+
+        foreach ($properties as $property) {
+            $this->crawlPropertyForNodesAndAssets($property, $subgraph, $unresolvedUris);
+            $this->crawlPropertyForTelephoneNumbers($property, $invalidPhoneNumbers);
+        }
+
+        foreach ($unresolvedUris as $uri) {
+            $messages[] = 'Not found: '.$uri;
+
+            $this->createResultItem($subgraph, $domain, $node, $uri, 404);
+        }
+        foreach ($invalidPhoneNumbers as $phoneNumber) {
+            $messages[] = 'Invalid format: '.$phoneNumber;
+
+            /* @see https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml - 490 is unassigned, and so we can use it */
+            $this->createResultItem($subgraph, $domain, $node, $phoneNumber, 490);
+        }
     }
 }
