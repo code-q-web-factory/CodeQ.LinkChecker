@@ -25,7 +25,7 @@ class CrawlNonExcludedUrls extends AbstractCrawlProfile
             } elseif ($match === 1) {
                 return false;
             } elseif ($match === false) {
-                throw new \RuntimeException('Invalid regex pattern: '.$excludeUrlRegexPattern, 1668185080);
+                throw new \RuntimeException('Invalid regex pattern: ' . $excludeUrlRegexPattern, 1668185080);
             }
         }
         return true;

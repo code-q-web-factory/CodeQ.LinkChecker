@@ -243,12 +243,12 @@ class ContentNodeCrawler
         }
 
         foreach ($unresolvedUris as $uri) {
-            $messages[] = 'Not found: '.$uri;
+            $messages[] = 'Not found: ' . $uri;
 
             $this->createResultItem($subgraph, $domain, $node, $uri, 404);
         }
         foreach ($invalidPhoneNumbers as $phoneNumber) {
-            $messages[] = 'Invalid format: '.$phoneNumber;
+            $messages[] = 'Invalid format: ' . $phoneNumber;
 
             /* @see https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml - 490 is unassigned, and so we can use it */
             $this->createResultItem($subgraph, $domain, $node, $phoneNumber, 490);

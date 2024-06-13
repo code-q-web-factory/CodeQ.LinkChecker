@@ -187,7 +187,7 @@ class LogAndPersistResultCrawlObserver extends CrawlObserver
     {
         return collect($this->resultItemsGroupedByStatusCode)->keys()->filter(function ($statusCode) {
                 return !$this->isSuccessOrRedirect($statusCode);
-            })->count() > 0;
+        })->count() > 0;
     }
 
     /**

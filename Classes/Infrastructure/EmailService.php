@@ -199,7 +199,8 @@ class EmailService implements NotificationServiceInterface
         if ($actualNumberOfRecipients < $totalNumberOfRecipients && $this->logErrors === self::LOG_LEVEL_LOG) {
             $this->logger->error(
                 sprintf('Could not send an email to all given recipients. Given %s, sent to %s', $totalNumberOfRecipients, $actualNumberOfRecipients),
-                $emailInfo);
+                $emailInfo
+            );
             return false;
         }
 

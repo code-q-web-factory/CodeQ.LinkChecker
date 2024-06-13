@@ -84,14 +84,15 @@ class WebCrawlerFactory
         return $crawler;
     }
 
-    private static function createRetryOnConnectionTimedOutMiddleware(int $retryAttempts) {
+    private static function createRetryOnConnectionTimedOutMiddleware(int $retryAttempts)
+    {
         return Middleware::retry(
             function (
                 $retries,
                 Request $request,
                 Response $response = null,
                 \Exception $exception = null
-            ) use($retryAttempts) {
+            ) use ($retryAttempts) {
                 if ($retries >= $retryAttempts) {
                     return false;
                 }

@@ -191,7 +191,6 @@ class CheckLinksCommandController extends CommandController
         $crawler = $this->webCrawlerFactory->createCrawler($crawlProfile, $crawlObserver);
 
         foreach ($domainsToCrawl as $domainToCrawl) {
-
             $url = $this->uriFactory->createFromDomain($domainToCrawl);
 
             try {
@@ -206,7 +205,6 @@ class CheckLinksCommandController extends CommandController
                     $this->outputFormatted("<error>The configured site domain $url could not be reached, please check if the URL is correct.</error>");
                     return;
                 }
-
             } catch (\InvalidArgumentException $exception) {
                 $this->outputLine('ERROR:  ' . $exception->getMessage());
             }
@@ -301,7 +299,7 @@ class CheckLinksCommandController extends CommandController
 
         ObjectAccess::setProperty($this->baseUriProvider, "configuredBaseUri", (string)$baseUri, true);
 
-        return function () use($originalConfiguredBaseUri) {
+        return function () use ($originalConfiguredBaseUri) {
             ObjectAccess::setProperty($this->baseUriProvider, "configuredBaseUri", $originalConfiguredBaseUri, true);
         };
     }
