@@ -48,7 +48,7 @@ Setup a cronjob e.g. daily to execute `./flow checklinks:crawl`
 
 ### Email reports
 
-The link checker can also send an email report with a csv attachment with a list of all broken links.
+The link checker can also send an email if it finds broken links.
 To enable this, you need to configure the email service like this:
 
 ```yaml
